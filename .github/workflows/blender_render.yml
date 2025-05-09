@@ -24,13 +24,13 @@ jobs:
       #   run: |
       #     ffmpeg -i output.mp4 -b:v 5M optimized.mp4
 
-      - name: Push Results to GitHub
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add optimized.mp4
-          git commit -m "Rendered animation"
-          git push
+      # - name: Push Results to GitHub
+      #   run: |
+      #    git config --global user.name "GitHub Actions"
+      #    git config --global user.email "actions@github.com"
+      #    git add optimized.mp4
+      #    git commit -m "Rendered animation"
+      #    git push
 
 
 
