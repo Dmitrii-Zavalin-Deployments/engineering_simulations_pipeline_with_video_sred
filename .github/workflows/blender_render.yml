@@ -14,19 +14,11 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3 python3-pip wget
+          sudo apt install -y python3 python3-pip blender
 
       - name: Install Dropbox SDK
         run: |
           pip install dropbox requests
-
-      - name: Install Blender
-        run: |
-          wget https://mirror.cs.umn.edu/blender/release/Blender4.0/blender-4.0-linux-x64.tar.xz
-          tar -xf blender-4.0-linux-x64.tar.xz
-          sudo mv blender-4.0-linux-x64 /opt/blender
-          echo 'export PATH=$PATH:/opt/blender' >> $HOME/.bashrc
-          source $HOME/.bashrc
 
       - name: Run `main.py` to Download Files from Dropbox
         env:
