@@ -5,32 +5,28 @@ on:
       - '**'  # Runs on any branch
 
 jobs:
-  render-animation:
+  download-files:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Blender
+      - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y blender
+          sudo apt install -y python3 python3-pip
 
-      # - name: Render Animation
-      #   run: |
-      #     blender -b turbine_model.blend -o //output -F MP4 -a
+      - name: Install Dropbox SDK
+        run: |
+          pip install dropbox requests
 
-      # - name: Encode & Optimize Video
-      #   run: |
-      #     ffmpeg -i output.mp4 -b:v 5M optimized.mp4
-
-      # - name: Push Results to GitHub
-      #   run: |
-      #    git config --global user.name "GitHub Actions"
-      #    git config --global user.email "actions@github.com"
-      #    git add optimized.mp4
-      #    git commit -m "Rendered animation"
-      #    git push
+      - name: Run `main.py` to Download Files from Dropbox
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        run: |
+          python3 main.py
 
 
 
