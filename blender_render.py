@@ -6,7 +6,7 @@ OUTPUT_FOLDER = "./RenderedOutput"
 
 def run_blender_render():
     """Executes Blender rendering in CLI mode."""
-    
+
     print("Starting Blender rendering process...")
 
     # Ensure output folder exists
@@ -22,8 +22,8 @@ def run_blender_render():
     # Select first .blend file (or loop for multiple files)
     blend_file = os.path.join(LOCAL_FOLDER, blend_files[0])
 
-    # Run Blender rendering command
-    render_command = f"blender -b {blend_file} -o {OUTPUT_FOLDER}/rendered_frame_#### -a"
+    # Run Blender rendering command with explicit output format
+    render_command = f"blender -b {blend_file} -o {OUTPUT_FOLDER}/rendered_frame_#### -F PNG -a"
     os.system(render_command)
 
     print(f"✅ Blender rendering completed! Check output in {OUTPUT_FOLDER}")
