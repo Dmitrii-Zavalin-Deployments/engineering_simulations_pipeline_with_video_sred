@@ -16,7 +16,14 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y blender=4.4.3 libegl1-mesa python3 python3-pip
+          sudo apt install -y python3 python3-pip libegl1
+
+      - name: Install Blender Manually
+        run: |
+          wget https://download.blender.org/release/Blender4.4/blender-4.4.3-linux-x64.tar.xz
+          tar -xvf blender-4.4.3-linux-x64.tar.xz
+          mv blender-4.4.3-linux-x64 ~/blender
+          sudo ln -s ~/blender/blender /usr/local/bin/blender
 
       - name: Install Dropbox SDK
         run: |
