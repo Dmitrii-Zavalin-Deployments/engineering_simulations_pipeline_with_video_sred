@@ -1,10 +1,7 @@
 name: Blender Render
 
 on:
-  push:
-    branches:
-      - '**'  # Runs on any branch
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:  # Allows manual triggering only
 
 jobs:
   download-files:
