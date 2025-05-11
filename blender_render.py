@@ -3,10 +3,11 @@ import os
 # Define paths
 LOCAL_FOLDER = "./BlenderInputFiles"
 OUTPUT_FOLDER = "./RenderedOutput"
+VIDEO_FILE = "./RenderedOutput/video.mp4"
 
 def run_blender_render():
-    """Executes Blender rendering in CLI mode with optimized settings."""
-
+    """Executes Blender rendering in CLI mode with optimized settings, then creates a video."""
+    
     print("🔄 Starting rendering process with enhanced settings...")
 
     # Ensure output folder exists
@@ -48,7 +49,7 @@ if obj:
     bpy.context.scene.cycles.samples = 128  # Increase samples for clearer results
 
     # Render frames
-    for frame in range(1, 11):  # Render 10 frames
+    for frame in range(1, 31):  # Render 30 frames for smoother animation
         bpy.context.scene.frame_set(frame)
         bpy.context.scene.render.filepath = '{OUTPUT_FOLDER}/frame_' + str(frame).zfill(4)
         bpy.ops.render.render(write_still=True)
@@ -60,6 +61,12 @@ else:
     os.system(render_command)
 
     print(f"✅ Rendering process completed! Check frames in {OUTPUT_FOLDER}")
+
+    # Create a video from frames using FFmpeg
+    ffmpeg_command = f"ffmpeg -framerate 24 -i {OUTPUT_FOLDER}/frame_%04d.png -c:v libx264 -pix_fmt yuv420p {VIDEO_FILE}"
+    os.system(ffmpeg_command)
+
+    print(f"🎥 Video creation completed! Check the final animation at {VIDEO_FILE}")
 
 if __name__ == "__main__":
     run_blender_render()
