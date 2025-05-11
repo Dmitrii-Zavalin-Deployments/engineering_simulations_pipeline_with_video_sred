@@ -10,10 +10,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3 python3-pip libegl1
+          sudo apt install -y python3 python3-pip libegl1 ffmpeg
 
       - name: Install Blender Manually
         run: |
@@ -21,6 +21,10 @@ jobs:
           tar -xvf blender-4.4.3-linux-x64.tar.xz
           mv blender-4.4.3-linux-x64 ~/blender
           sudo ln -s ~/blender/blender /usr/local/bin/blender
+
+      - name: Install Python Dependencies
+        run: |
+          pip install dropbox requests
 
       - name: Run `main.py` to Download Files and Render Frames
         env:
