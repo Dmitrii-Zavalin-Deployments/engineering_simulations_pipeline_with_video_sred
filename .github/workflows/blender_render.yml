@@ -4,7 +4,7 @@ on:
   workflow_dispatch:  # Allows manual triggering only
 
 jobs:
-  download-files:
+  render-blender:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -22,17 +22,22 @@ jobs:
           mv blender-4.4.3-linux-x64 ~/blender
           sudo ln -s ~/blender/blender /usr/local/bin/blender
 
-      - name: Install Dropbox SDK
-        run: |
-          pip install dropbox requests
-
-      - name: Run `main.py` to Download Files from Dropbox
+      - name: Run `main.py` to Download Files and Render Frames
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: |
           python3 main.py
+
+      - name: Create Video from Rendered Frames
+        run: |
+          chmod +x create_video.sh
+          ./create_video.sh
+
+      - name: Upload Final Video to Dropbox
+        run: |
+          python3 upload_to_dropbox.py ./RenderedOutput/video.mp4 /simulations/Blender/output/video.mp4
 
 
 
