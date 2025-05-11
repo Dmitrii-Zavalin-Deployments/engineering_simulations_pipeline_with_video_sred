@@ -21,9 +21,15 @@ def refresh_access_token(refresh_token, client_id, client_secret):
 # Function to delete a file from Dropbox
 def delete_file_from_dropbox(dbx, file_path, log_file):
     try:
-        dbx.files_delete_v2(file_path)
+        response = dbx.files_delete_v2(file_path)
         log_file.write(f"Deleted file from Dropbox: {file_path}\n")
         print(f"Deleted file from Dropbox: {file_path}")  # Print to GitHub Actions logs
+
+        # Log API rate limits from response headers
+        rate_limit_remaining = response.headers.get("X-Rate-Limit-Remaining", "Unknown")
+        log_file.write(f"Dropbox API Calls Remaining: {rate_limit_remaining}\n")
+        print(f"Dropbox API Calls Remaining: {rate_limit_remaining}")  # Print in GitHub Actions logs
+
     except Exception as e:
         log_file.write(f"Failed to delete file: {file_path}, error: {e}\n")
         print(f"Failed to delete file: {file_path}, error: {e}")  # Print error to GitHub Actions logs
@@ -50,13 +56,18 @@ def download_files_from_dropbox(dropbox_folder, local_folder, refresh_token, cli
                 log_file.write(f"Listing files in Dropbox folder: {dropbox_folder}\n")
 
                 for entry in result.entries:
-                    if isinstance(entry, dropbox.files.FileMetadata):  # Now downloads all files, not just PDFs
+                    if isinstance(entry, dropbox.files.FileMetadata):  # Downloads all files, not just PDFs
                         local_path = os.path.join(local_folder, entry.name)
                         with open(local_path, "wb") as f:
                             metadata, res = dbx.files_download(path=entry.path_lower)
                             f.write(res.content)
                         log_file.write(f"Downloaded {entry.name} to {local_path}\n")
                         print(entry.name)  # Print the name of the downloaded file to GitHub Actions logs
+
+                        # Log API rate limits from response headers
+                        rate_limit_remaining = res.headers.get("X-Rate-Limit-Remaining", "Unknown")
+                        log_file.write(f"Dropbox API Calls Remaining: {rate_limit_remaining}\n")
+                        print(f"Dropbox API Calls Remaining: {rate_limit_remaining}")  # Print in GitHub Actions logs
 
                         # Delete the file from Dropbox after downloading
                         delete_file_from_dropbox(dbx, entry.path_lower, log_file)
