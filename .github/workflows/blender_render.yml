@@ -40,8 +40,12 @@ jobs:
           ./create_video.sh
 
       - name: Upload Final Video to Dropbox
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: |
-          python3 upload_to_dropbox.py ./RenderedOutput/video.mp4 /simulations/Blender/output/video.mp4
+          python3 upload_to_dropbox.py ./RenderedOutput/video.mp4 /simulations/Blender/output/video.mp4 $REFRESH_TOKEN $APP_KEY $APP_SECRET
 
 
 
