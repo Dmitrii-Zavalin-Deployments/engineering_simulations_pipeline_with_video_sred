@@ -5,9 +5,9 @@ LOCAL_FOLDER = "./BlenderInputFiles"
 OUTPUT_FOLDER = "./RenderedOutput"
 
 def run_blender_render():
-    """Executes Blender rendering in CLI mode with a simple rotation animation on the imported model."""
+    """Executes Blender rendering in CLI mode, ensuring correct object selection."""
 
-    print("Starting simple test animation rendering...")
+    print("🔄 Starting rendering process...")
 
     # Ensure output folder exists
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
@@ -22,28 +22,29 @@ def run_blender_render():
     # Select first .blend file
     blend_file = os.path.join(LOCAL_FOLDER, blend_files[0])
 
-    # Run Blender command to find imported model and apply rotation
+    # Run Blender command ensuring correct object selection
     render_command = f"""blender -b {blend_file} --python-expr "
 import bpy
-scene = bpy.context.scene
 
-# Ensure the imported model is selected (exclude default cube)
-valid_objects = [obj for obj in scene.objects if 'Cube' not in obj.name]  # Filters out default cube
-obj = valid_objects[0] if valid_objects else None  # Pick first imported object
+# Load the `.blend` file
+bpy.ops.wm.open_mainfile(filepath='{blend_file}')
+
+# Find the imported model 'MyImportedModel'
+obj = bpy.data.objects.get('MyImportedModel')
 
 if obj:
     for frame in range(1, 11):  # Render 10 frames
         obj.rotation_euler.z = frame * (3.14 / 5)  # Rotate incrementally
-        scene.frame_set(frame)
-        scene.render.filepath = '{OUTPUT_FOLDER}/frame_' + str(frame).zfill(4)
+        bpy.context.scene.frame_set(frame)
+        bpy.context.scene.render.filepath = '{OUTPUT_FOLDER}/frame_' + str(frame).zfill(4)
         bpy.ops.render.render(write_still=True)
 else:
-    print('❌ No valid imported object found! Skipping rendering.')
+    print('❌ Object "MyImportedModel" not found! Skipping rendering.')
 " """
     
     os.system(render_command)
 
-    print(f"✅ Simple rotating animation completed! Check frames in {OUTPUT_FOLDER}")
+    print(f"✅ Rendering process completed! Check frames in {OUTPUT_FOLDER}")
 
 if __name__ == "__main__":
     run_blender_render()
