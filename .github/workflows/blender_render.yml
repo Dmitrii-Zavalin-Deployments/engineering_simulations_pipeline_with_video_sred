@@ -10,7 +10,6 @@ jobs:
     steps:
 
       # 1️⃣ Step: Checkout the Repository
-      # ✅ Ensures GitHub Actions can access project files
       - name: Checkout Repository
         uses: actions/checkout@v3
 
@@ -59,6 +58,18 @@ jobs:
       - name: Verify `.blend` File Creation
         run: |
           ls -l ./testing-input-output/ || echo "❌ No `.blend` file found!"
+
+      # 9️⃣ Step: Commit and Push `.blend` File to Repository (Only `testing-input-output/`)
+      - name: Commit and Push `.blend` File
+        env:
+          GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
+          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+        run: |
+          git config --global user.name "$GIT_USER_NAME"
+          git config --global user.email "$GIT_USER_EMAIL"
+          git add testing-input-output/
+          git commit -m "Auto-update: Added latest fluid simulation .blend file"
+          git push origin HEAD
 
 
 
