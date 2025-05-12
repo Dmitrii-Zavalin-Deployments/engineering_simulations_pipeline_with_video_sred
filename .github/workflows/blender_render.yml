@@ -1,4 +1,4 @@
-name: Blender Render
+name: Blender Render  # Workflow name
 
 on:
   workflow_dispatch:  # Allows manual triggering only
@@ -7,53 +7,26 @@ jobs:
   render-blender:
     runs-on: ubuntu-latest
     steps:
+
+      # 1️⃣ Step: Checkout the Repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install System Dependencies
+      # 2️⃣ Step: Verify `.obj` File Exists in Repository
+      - name: Check if `.obj` file is present
         run: |
-          sudo apt update
-          sudo apt install -y python3 python3-pip libegl1 ffmpeg
+          ls -l ./testing-input-output/
 
-      - name: Install Blender Manually
+      # 3️⃣ Step: Run Fluid Simulation (Create `.blend`)
+      # ✅ Passes the `.obj` file path as an argument to fluid_simulation.py
+      - name: Run Fluid Simulation with `.obj` Parameter
         run: |
-          wget https://download.blender.org/release/Blender4.4/blender-4.4.3-linux-x64.tar.xz
-          tar -xvf blender-4.4.3-linux-x64.tar.xz
-          mv blender-4.4.3-linux-x64 ~/blender
-          sudo ln -s ~/blender/blender /usr/local/bin/blender
+          blender -b --python fluid_simulation.py ./testing-input-output/disk.obj
 
-      - name: Install Python Dependencies
+      # Debugging: Verify `.blend` File Creation
+      - name: Verify `.blend` File Creation
         run: |
-          pip install dropbox requests
-
-      - name: Download `.obj` Files from Dropbox
-        env:
-          APP_KEY: ${{ secrets.APP_KEY }}
-          APP_SECRET: ${{ secrets.APP_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-        run: |
-          python3 download_dropbox_files.py "/simulations/Blender/input" "./BlenderInputFiles" "$REFRESH_TOKEN" "$APP_KEY" "$APP_SECRET" "./download_log.txt"
-
-      - name: Prepare Fluid Simulation and Save Scene as `.blend`
-        run: |
-          blender -b --python fluid_simulation.py
-
-      - name: Render Frames from Fluid Simulation
-        run: |
-          python3 blender_render.py
-
-      - name: Create Video from Rendered Frames
-        run: |
-          chmod +x create_video.sh
-          ./create_video.sh
-
-      - name: Upload Final Video to Dropbox
-        env:
-          APP_KEY: ${{ secrets.APP_KEY }}
-          APP_SECRET: ${{ secrets.APP_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REnFRESH_TOKEN }}
-        run: |
-          python3 upload_to_dropbox.py "./RenderedOutput/video.mp4" "/simulations/Blender/output/video.mp4" "$REFRESH_TOKEN" "$APP_KEY" "$APP_SECRET"
+          ls -l ./BlenderInputFiles
 
 
 
