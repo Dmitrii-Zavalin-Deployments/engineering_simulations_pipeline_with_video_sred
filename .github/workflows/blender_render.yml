@@ -1,7 +1,8 @@
 name: Blender Render  # Workflow name
 
 on:
-  workflow_dispatch:  # Allows manual triggering only
+  push:  # ✅ Runs on every commit to any branch
+  workflow_dispatch:  # ✅ Allows manual triggering too
 
 jobs:
   render-blender:
