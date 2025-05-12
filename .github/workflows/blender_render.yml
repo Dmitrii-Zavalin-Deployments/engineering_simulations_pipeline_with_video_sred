@@ -15,14 +15,12 @@ jobs:
         uses: actions/checkout@v3
 
       # 2️⃣ Step: Install System Dependencies
-      # ✅ Installs essential packages like Python & FFmpeg
       - name: Install System Dependencies
         run: |
           sudo apt update
           sudo apt install -y python3 python3-pip libegl1 ffmpeg
 
       # 3️⃣ Step: Install Blender
-      # ✅ Downloads & installs Blender correctly
       - name: Install Blender
         run: |
           wget https://download.blender.org/release/Blender4.4/blender-4.4.3-linux-x64.tar.xz
@@ -31,33 +29,36 @@ jobs:
           sudo ln -s ~/blender/blender /usr/local/bin/blender
 
       # 4️⃣ Step: Verify Blender Installation
-      # ✅ Checks if Blender is correctly installed
       - name: Check Blender Installation
         run: |
           ls -l ~/blender
           ~/blender/blender --version || echo "❌ Blender is NOT installed!"
 
       # 5️⃣ Step: Debug Blender Path
-      # ✅ Ensures `blender` is accessible
       - name: Debug Blender Path
         run: |
           which blender || echo "❌ Blender path is NOT found!"
 
-      # 6️⃣ Step: Verify `.obj` File Exists in Repository
-      # ✅ Checks for `.obj` file inside `testing-input-output/`
-      - name: Check if `.obj` file is present
+      # 6️⃣ Step: Search for Any `.obj` File in `testing-input-output/`
+      - name: Detect Any `.obj` File
         run: |
-          ls -l ./testing-input-output/
+          OBJ_FILE=$(ls testing-input-output/*.obj | head -n 1)
+          if [ -z "$OBJ_FILE" ]; then
+            echo "❌ No .obj file found!"
+            exit 1
+          fi
+          echo "✅ Found OBJ file: $OBJ_FILE"
+          echo "OBJ_FILE=$OBJ_FILE" >> $GITHUB_ENV
 
-      # 7️⃣ Step: Run Fluid Simulation (Create `.blend`)
-      # ✅ Uses `--` to pass the `.obj` file path correctly
-      - name: Run Fluid Simulation with `.obj` Parameter
+      # 7️⃣ Step: Run Fluid Simulation Using the Detected `.obj` File
+      - name: Run Fluid Simulation with Detected `.obj` File
         run: |
-          ~/blender/blender -b --python fluid_simulation.py -- ./testing-input-output/disk.obj
+          ~/blender/blender -b --python fluid_simulation.py -- $OBJ_FILE
 
-      # Debugging: Verify `.blend` File Creation
+      # 8️⃣ Step: Verify `.blend` File Creation in `testing-input-output/`
       - name: Verify `.blend` File Creation
         run: |
-          ls -l ./BlenderInputFiles
+          ls -l ./testing-input-output/ || echo "❌ No `.blend` file found!"
+
 
 
