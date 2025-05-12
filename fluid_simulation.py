@@ -65,9 +65,18 @@ water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (0, 0, -1)  
 
 # **Step 8: Save Scene as `.blend`**
 blend_output_path = os.path.join(obj_dir, "simulation.blend")
+
+# Debugging: Print where the `.blend` file should be saved
+print(f"🧐 Attempting to save .blend file at: {blend_output_path}")
+
+# Save the `.blend` file
 bpy.ops.wm.save_mainfile(filepath=blend_output_path)
 
-print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}' using '{obj_path}'.")
+# Verify `.blend` file after saving
+if os.path.exists(blend_output_path):
+    print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}' using '{obj_path}'.")
+else:
+    print(f"❌ ERROR: .blend file was not created in '{blend_output_path}'. Check Blender execution.")
 
 
 
