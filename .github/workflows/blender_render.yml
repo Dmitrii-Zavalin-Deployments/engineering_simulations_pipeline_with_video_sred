@@ -38,13 +38,7 @@ jobs:
         run: |
           which blender || echo "❌ Blender path is NOT found!"
 
-      # 6️⃣ Step: Install OBJ Import Add-on
-      - name: Install OBJ Import Add-on
-        run: |
-          mkdir -p ~/blender/4.4/scripts/addons/
-          wget -P ~/blender/4.4/scripts/addons/ https://developer.blender.org/diffusion/BMT/browse/master/io_scene_obj.py
-
-      # 7️⃣ Step: Search for Any `.obj` File in `testing-input-output/`
+      # 6️⃣ Step: Search for Any `.obj` File in `testing-input-output/`
       - name: Detect Any `.obj` File
         run: |
           OBJ_FILE=$(ls testing-input-output/*.obj | head -n 1)
@@ -55,12 +49,12 @@ jobs:
           echo "✅ Found OBJ file: $OBJ_FILE"
           echo "OBJ_FILE=$OBJ_FILE" >> $GITHUB_ENV
 
-      # 8️⃣ Step: Run Fluid Simulation Using the Detected `.obj` File
+      # 7️⃣ Step: Run Fluid Simulation Using the Detected `.obj` File
       - name: Run Fluid Simulation with Detected `.obj` File
         run: |
           ~/blender/blender -b --python fluid_simulation.py -- $OBJ_FILE
 
-      # 9️⃣ Step: Verify `.blend` File Creation in `testing-input-output/`
+      # 8️⃣ Step: Verify `.blend` File Creation in `testing-input-output/`
       - name: Verify `.blend` File Creation
         run: |
           ls -l ./testing-input-output/ || echo "❌ No `.blend` file found!"
