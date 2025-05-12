@@ -48,10 +48,11 @@ domain.modifiers["FluidSim"].domain_settings.domain_type = 'LIQUID'
 domain.modifiers["FluidSim"].domain_settings.resolution_max = 64
 
 # **Step 6: Configure Fluid Effector (Obstacle)**
-obj.modifiers.new(name="FluidEffector", type='FLUID')
-obj.modifiers["FluidEffector"].fluid_type = 'EFFECTOR'
-obj.modifiers["FluidEffector"].effector_settings.surface_sampling = 'NONE'
-obj.modifiers["FluidEffector"].effector_settings.use_plane_init = True
+if "FluidEffector" in obj.modifiers:
+    obj.modifiers["FluidEffector"].fluid_type = 'EFFECTOR'
+    obj.modifiers["FluidEffector"].effector_settings.use_plane_init = True  # Removed outdated `surface_sampling`
+else:
+    print("⚠️ WARNING: FluidEffector modifier not found on object!")
 
 # **Step 7: Add Water Source**
 bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=(0, 0, 2))
