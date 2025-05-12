@@ -26,7 +26,7 @@ jobs:
         run: |
           pip install dropbox requests
 
-      - name: Download `.blend` Files from Dropbox
+      - name: Download `.obj` Files from Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
@@ -34,9 +34,9 @@ jobs:
         run: |
           python3 download_dropbox_files.py "/simulations/Blender/input" "./BlenderInputFiles" "$REFRESH_TOKEN" "$APP_KEY" "$APP_SECRET" "./download_log.txt"
 
-      - name: Prepare Fluid Simulation
+      - name: Prepare Fluid Simulation and Save Scene as `.blend`
         run: |
-          blender -b ./BlenderInputFiles/simulation.blend --python fluid_simulation.py
+          blender -b --python fluid_simulation.py
 
       - name: Render Frames from Fluid Simulation
         run: |
@@ -51,7 +51,7 @@ jobs:
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          REFRESH_TOKEN: ${{ secrets.REnFRESH_TOKEN }}
         run: |
           python3 upload_to_dropbox.py "./RenderedOutput/video.mp4" "/simulations/Blender/output/video.mp4" "$REFRESH_TOKEN" "$APP_KEY" "$APP_SECRET"
 
