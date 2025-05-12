@@ -21,22 +21,29 @@ obj_path = os.path.abspath(os.path.join(obj_dir, obj_files[0]))
 # Debugging: Print the detected file for verification
 print(f"🔹 Automatically detected .obj file: {obj_path}")
 
-# **Step 3: Enable the OBJ Import Add-on (With Safe Handling)**
+# **Step 3: Ensure OBJ Import Add-on is Installed**
 addon_name = "io_scene_obj"
+
 if addon_name not in bpy.context.preferences.addons:
-    print(f"⚠️ Add-on '{addon_name}' not found. Attempting to enable...")
+    print(f"⚠️ Add-on '{addon_name}' not found. Attempting to install...")
     try:
-        bpy.ops.preferences.addon_enable(module=addon_name)
-        print(f"✅ Successfully enabled '{addon_name}'!")
+        addon_path = "/home/runner/blender/4.4/scripts/addons/io_scene_obj.py"
+        if not os.path.exists(addon_path):
+            print(f"❌ Error: Add-on file '{addon_path}' missing. Cannot install.")
+            sys.exit(1)
+        
+        bpy.ops.wm.addon_install(filepath=addon_path)  # Install the add-on
+        bpy.ops.preferences.addon_enable(module=addon_name)  # Enable the add-on
+        print(f"✅ Successfully installed and enabled '{addon_name}'!")
     except RuntimeError:
-        print(f"❌ Error: Add-on '{addon_name}' not available in Blender. Skipping OBJ import.")
+        print(f"❌ Failed to install or enable '{addon_name}'. Skipping OBJ import.")
         sys.exit(1)
 
 # **Step 4: Import the `.obj` File**
 try:
     bpy.ops.import_scene.obj(filepath=obj_path)
 except RuntimeError:
-    print(f"❌ Failed to import .obj file: '{obj_path}'")
+    print(f"❌ Failed to import .obj file: '{obj_path}'. Check installation.")
     sys.exit(1)
 
 # Center the object in the scene
