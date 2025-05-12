@@ -60,8 +60,11 @@ water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
 water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (0, 0, -1)  # Water flowing downward
 
-# **Step 8: Save Scene as `.blend`**
-blend_output_path = "./BlenderInputFiles/simulation.blend"
+# **Step 8: Ensure the Output Directory Exists**
+blend_output_path = os.path.join(obj_dir, "simulation.blend")
+os.makedirs(obj_dir, exist_ok=True)  # Ensure the directory exists
+
+# **Step 9: Save Scene as `.blend`**
 bpy.ops.wm.save_mainfile(filepath=blend_output_path)
 
 print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}' using '{obj_path}'.")
