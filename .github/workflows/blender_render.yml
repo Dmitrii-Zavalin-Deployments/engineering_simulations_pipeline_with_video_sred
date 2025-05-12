@@ -38,28 +38,32 @@ jobs:
         run: |
           which blender || echo "❌ Blender path is NOT found!"
 
-      # 6️⃣ Step: Search for Any `.obj` File in `testing-input-output/`
-      - name: Detect Any `.obj` File
+      # 6️⃣ Step: Search for Any `.blend` File in `testing-input-output/`
+      - name: Detect Any `.blend` File
         run: |
-          OBJ_FILE=$(ls testing-input-output/*.obj | head -n 1)
-          if [ -z "$OBJ_FILE" ]; then
-            echo "❌ No .obj file found!"
-            exit 1
+          BLEND_FILE=$(ls testing-input-output/*.blend | head -n 1 || echo "")
+          if [ -z "$BLEND_FILE" ]; then
+            echo "⚠️ WARNING: No `.blend` file found in directory. Simulation will not run!"
+          else
+            echo "✅ Found `.blend` file: $BLEND_FILE"
+            echo "BLEND_FILE=$BLEND_FILE" >> $GITHUB_ENV
           fi
-          echo "✅ Found OBJ file: $OBJ_FILE"
-          echo "OBJ_FILE=$OBJ_FILE" >> $GITHUB_ENV
 
-      # 7️⃣ Step: Run Fluid Simulation Using the Detected `.obj` File
-      - name: Run Fluid Simulation with Detected `.obj` File
+      # 7️⃣ Step: Run Fluid Simulation Only If `.blend` File Exists
+      - name: Run Fluid Simulation
         run: |
-          ~/blender/blender -b --python fluid_simulation.py -- $OBJ_FILE
+          if [ -n "$BLEND_FILE" ]; then
+            ~/blender/blender -b --python fluid_simulation.py -- "$BLEND_FILE"
+          else
+            echo "⚠️ SKIPPED: No `.blend` file found, simulation will not be executed."
+          fi
 
       # 8️⃣ Step: Verify `.blend` File Creation in `testing-input-output/`
       - name: Verify `.blend` File Creation
         run: |
-          ls -l ./testing-input-output/ || echo "❌ No `.blend` file found!"
+          ls -l ./testing-input-output/ || echo "⚠️ WARNING: No `.blend` file was created."
 
-      # 🔟 Step: Commit and Push `.blend` File to Repository (Only `testing-input-output/`)
+      # 🔟 Step: Commit and Push `.blend` File to Repository (Only If It Exists)
       - name: Commit and Push `.blend` File
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
@@ -68,15 +72,11 @@ jobs:
           git config --global user.name "$GIT_USER_NAME"
           git config --global user.email "$GIT_USER_EMAIL"
 
-          # Explicitly add new `.blend` files
           if ls testing-input-output/*.blend 1> /dev/null 2>&1; then
             git add testing-input-output/*.blend
             git status
             git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added latest fluid simulation .blend file"
             git push origin HEAD
           else
-            echo "❌ No `.blend` file detected, skipping commit."
+            echo "⚠️ SKIPPED: No `.blend` file detected, skipping commit."
           fi
-
-
-
