@@ -34,13 +34,14 @@ jobs:
       # ✅ Checks if Blender is correctly installed
       - name: Check Blender Installation
         run: |
-          blender --version
+          ls -l ~/blender
+          ~/blender/blender --version || echo "❌ Blender is NOT installed!"
 
       # 5️⃣ Step: Debug Blender Path
       # ✅ Ensures `blender` is accessible
       - name: Debug Blender Path
         run: |
-          which blender
+          which blender || echo "❌ Blender path is NOT found!"
 
       # 6️⃣ Step: Verify `.obj` File Exists in Repository
       # ✅ Checks for `.obj` file inside `testing-input-output/`
@@ -52,7 +53,7 @@ jobs:
       # ✅ Passes the `.obj` file path as an argument to fluid_simulation.py
       - name: Run Fluid Simulation with `.obj` Parameter
         run: |
-          blender -b --python fluid_simulation.py ./testing-input-output/disk.obj
+          ~/blender/blender -b --python fluid_simulation.py ./testing-input-output/disk.obj
 
       # Debugging: Verify `.blend` File Creation
       - name: Verify `.blend` File Creation
