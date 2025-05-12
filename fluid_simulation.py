@@ -1,15 +1,19 @@
 import bpy
+import sys
 
-# **Step 1: Delete Default Objects**
+# **Step 1: Get the .obj file path from command-line arguments**
+if len(sys.argv) < 2:
+    print("❌ Error: No .obj file path provided!")
+    sys.exit(1)
+
+obj_path = sys.argv[1]
+
+# **Step 2: Delete Default Objects**
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete()
 
-# **Step 2: Enable the OBJ Import Addon**
-bpy.ops.preferences.addon_enable(module="io_scene_obj")
-
-# **Step 3: Import the .obj File**
-import_path = "./BlenderInputFiles/disk.obj"  # Adjust based on actual file name
-bpy.ops.import_scene.obj(filepath=import_path)
+# **Step 3: Import the `.obj` Model**
+bpy.ops.import_scene.obj(filepath=obj_path)
 
 # Center the disk in the scene
 disk = bpy.context.selected_objects[0]
@@ -47,10 +51,10 @@ water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
 water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (0, 0, -1)  # Water flowing downward
 
-# **Step 7: Save Scene as .blend**
+# **Step 7: Save Scene as `.blend`**
 bpy.ops.wm.save_mainfile(filepath="./BlenderInputFiles/simulation.blend")
 
-print("✅ Fluid simulation setup complete! Scene saved as 'simulation.blend'.")
+print(f"✅ Fluid simulation setup complete! Scene saved as 'simulation.blend' using {obj_path}.")
 
 
 
