@@ -4,98 +4,36 @@ import os
 
 # **Step 1: Define the Directory Containing `.obj` Files**
 obj_dir = "./testing-input-output/"
-
-# Ensure directory exists before proceeding
 os.makedirs(obj_dir, exist_ok=True)
 
 # **Step 2: Find Any `.obj` File in the Directory**
 obj_files = [f for f in os.listdir(obj_dir) if f.endswith(".obj")]
-
 if not obj_files:
     print("❌ Error: No `.obj` file found in directory!")
     sys.exit(1)
 
-# Take the first `.obj` file found
 obj_path = os.path.abspath(os.path.join(obj_dir, obj_files[0]))
-
-# Debugging: Print the detected file for verification
 print(f"🔹 Automatically detected .obj file: {obj_path}")
 
-# **Step 3: Ensure OBJ Import Add-on is Installed**
+# **Step 3: Enable the OBJ Import Add-on**
 addon_name = "io_scene_obj"
-
-if addon_name not in bpy.context.preferences.addons:
-    print(f"⚠️ Add-on '{addon_name}' not found. Attempting to install...")
-    try:
-        addon_path = "/home/runner/blender/4.4/scripts/addons/io_scene_obj.py"
-        if not os.path.exists(addon_path):
-            print(f"❌ Error: Add-on file '{addon_path}' missing. Cannot install.")
-            sys.exit(1)
-        
-        bpy.ops.wm.addon_install(filepath=addon_path)  # Install the add-on
-        bpy.ops.preferences.addon_enable(module=addon_name)  # Enable the add-on
-        print(f"✅ Successfully installed and enabled '{addon_name}'!")
-    except RuntimeError:
-        print(f"❌ Failed to install or enable '{addon_name}'. Skipping OBJ import.")
-        sys.exit(1)
+try:
+    bpy.ops.preferences.addon_enable(module=addon_name)
+    print(f"✅ Successfully enabled '{addon_name}'!")
+except Exception as e:
+    print(f"⚠️ Warning: Unable to enable '{addon_name}'. It may not be pre-installed.")
+    print(f"Error details: {e}")
+    sys.exit(1)  # Exit to prevent continuing without OBJ support
 
 # **Step 4: Import the `.obj` File**
 try:
     bpy.ops.import_scene.obj(filepath=obj_path)
-except RuntimeError:
-    print(f"❌ Failed to import .obj file: '{obj_path}'. Check installation.")
+    print(f"✅ Successfully imported '{obj_path}' into Blender!")
+except Exception as e:
+    print(f"❌ Failed to import .obj file '{obj_path}'. Error: {e}")
     sys.exit(1)
 
-# Center the object in the scene
-obj = bpy.context.selected_objects[0]
-obj.location = (0, 0, 0)
-bpy.ops.object.origin_set(type='ORIGIN_CENTER_OF_MASS', center='MEDIAN')
-
-# **Step 5: Create Fluid Domain**
-bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
-domain = bpy.context.object
-domain.name = "FluidDomain"
-domain.scale = (3, 3, 3)  # Resize to surround the imported object
-bpy.ops.object.transform_apply(scale=True)
-
-# Enable Fluid Simulation
-domain.modifiers.new(name="FluidSim", type='FLUID')
-domain.modifiers["FluidSim"].fluid_type = 'DOMAIN'
-domain.modifiers["FluidSim"].domain_settings.domain_type = 'LIQUID'
-domain.modifiers["FluidSim"].domain_settings.resolution_max = 64  # Higher values for detail
-
-# **Step 6: Set Imported Object as an Obstacle**
-obj.modifiers.new(name="FluidEffector", type='FLUID')
-obj.modifiers["FluidEffector"].fluid_type = 'EFFECTOR'
-obj.modifiers["FluidEffector"].effector_settings.surface_sampling = 'NONE'
-obj.modifiers["FluidEffector"].effector_settings.use_plane_init = True
-
-# **Step 7: Add Water Source**
-bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=(0, 0, 2))
-water_source = bpy.context.object
-water_source.name = "WaterSource"
-
-# Enable fluid and set it as an inflow
-water_source.modifiers.new(name="FluidFlow", type='FLUID')
-water_source.modifiers["FluidFlow"].fluid_type = 'FLOW'
-water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
-water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
-water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (0, 0, -1)  # Water flowing downward
-
-# **Step 8: Save Scene as `.blend`**
-blend_output_path = os.path.join(obj_dir, "simulation.blend")
-
-# Debugging: Print where the `.blend` file should be saved
-print(f"🧐 Attempting to save .blend file at: {blend_output_path}")
-
-# Save the `.blend` file
-bpy.ops.wm.save_mainfile(filepath=blend_output_path)
-
-# Verify `.blend` file after saving
-if os.path.exists(blend_output_path):
-    print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}' using '{obj_path}'.")
-else:
-    print(f"❌ ERROR: .blend file was not created in '{blend_output_path}'. Check Blender execution.")
+# Continue with fluid simulation setup...
 
 
 
