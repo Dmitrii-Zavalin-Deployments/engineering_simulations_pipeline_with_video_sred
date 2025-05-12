@@ -67,8 +67,17 @@ jobs:
         run: |
           git config --global user.name "$GIT_USER_NAME"
           git config --global user.email "$GIT_USER_EMAIL"
-          git add testing-input-output/
-          git commit -m "Auto-update: Added latest fluid simulation .blend file"
+
+          # Explicitly add new `.blend` files
+          git add testing-input-output/*.blend
+
+          # Verify tracked files before committing
+          git status
+
+          # Commit only if there are changes
+          git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added latest fluid simulation .blend file"
+
+          # Push changes to repository
           git push origin HEAD
 
 
