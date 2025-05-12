@@ -50,10 +50,10 @@ jobs:
           ls -l ./testing-input-output/
 
       # 7️⃣ Step: Run Fluid Simulation (Create `.blend`)
-      # ✅ Passes the `.obj` file path as an argument to fluid_simulation.py
+      # ✅ Uses `--` to pass the `.obj` file path correctly
       - name: Run Fluid Simulation with `.obj` Parameter
         run: |
-          ~/blender/blender -b --python fluid_simulation.py ./testing-input-output/disk.obj
+          ~/blender/blender -b --python fluid_simulation.py -- ./testing-input-output/disk.obj
 
       # Debugging: Verify `.blend` File Creation
       - name: Verify `.blend` File Creation
