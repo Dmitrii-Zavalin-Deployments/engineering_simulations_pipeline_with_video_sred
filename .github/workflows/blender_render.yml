@@ -10,15 +10,45 @@ jobs:
     steps:
 
       # 1️⃣ Step: Checkout the Repository
+      # ✅ Ensures GitHub Actions can access project files
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Step: Verify `.obj` File Exists in Repository
+      # 2️⃣ Step: Install System Dependencies
+      # ✅ Installs essential packages like Python & FFmpeg
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3 python3-pip libegl1 ffmpeg
+
+      # 3️⃣ Step: Install Blender
+      # ✅ Downloads & installs Blender correctly
+      - name: Install Blender
+        run: |
+          wget https://download.blender.org/release/Blender4.4/blender-4.4.3-linux-x64.tar.xz
+          tar -xvf blender-4.4.3-linux-x64.tar.xz
+          mv blender-4.4.3-linux-x64 ~/blender
+          sudo ln -s ~/blender/blender /usr/local/bin/blender
+
+      # 4️⃣ Step: Verify Blender Installation
+      # ✅ Checks if Blender is correctly installed
+      - name: Check Blender Installation
+        run: |
+          blender --version
+
+      # 5️⃣ Step: Debug Blender Path
+      # ✅ Ensures `blender` is accessible
+      - name: Debug Blender Path
+        run: |
+          which blender
+
+      # 6️⃣ Step: Verify `.obj` File Exists in Repository
+      # ✅ Checks for `.obj` file inside `testing-input-output/`
       - name: Check if `.obj` file is present
         run: |
           ls -l ./testing-input-output/
 
-      # 3️⃣ Step: Run Fluid Simulation (Create `.blend`)
+      # 7️⃣ Step: Run Fluid Simulation (Create `.blend`)
       # ✅ Passes the `.obj` file path as an argument to fluid_simulation.py
       - name: Run Fluid Simulation with `.obj` Parameter
         run: |
@@ -28,6 +58,5 @@ jobs:
       - name: Verify `.blend` File Creation
         run: |
           ls -l ./BlenderInputFiles
-
 
 
