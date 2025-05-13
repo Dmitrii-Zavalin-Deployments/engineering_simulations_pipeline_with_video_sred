@@ -41,7 +41,7 @@ obj.rotation_euler = (0, 1.5708, 0)  # 90-degree rotation, making disk perpendic
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
 domain = bpy.context.object
 domain.name = "FluidDomain"
-domain.scale = (20, 10, 5)  # Larger domain supports full river flow past the disk
+domain.scale = (25, 10, 5)  # Longer domain ensures smooth fluid travel past the disk
 bpy.ops.object.transform_apply(scale=True)
 
 # Enable Fluid Simulation
@@ -62,22 +62,17 @@ else:
     obj.modifiers["FluidEffector"].effector_settings.use_plane_init = True
     print("⚠️ FluidEffector modifier already present on object.")
 
-# ✅ Convert Water Source to a Wide Plane for River Flow
-bpy.ops.mesh.primitive_plane_add(size=12, location=(-8, 0, 0))  # Large inflow source placed at the left
+# ✅ Move Water Source to the Left (Instead of Above the Disk)
+bpy.ops.mesh.primitive_plane_add(size=12, location=(-12, 0, 0))  # Placed far left, ensuring horizontal inflow
 water_source = bpy.context.object
 water_source.name = "WaterSource"
 
-# ✅ Adjust Inflow Direction to Move Left to Right (River Flow)
+# ✅ Adjust Inflow Direction for River Flow (Move Water Left to Right)
 water_source.modifiers.new(name="FluidFlow", type='FLUID')
 water_source.modifiers["FluidFlow"].fluid_type = 'FLOW'
 water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
-
-if hasattr(water_source.modifiers["FluidFlow"].flow_settings, "inflow_velocity"):
-    water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (4, 0, 0)  # Continuous movement along X-axis
-    print("✅ Applied correct inflow velocity settings.")
-else:
-    print("⚠️ WARNING: `inflow_velocity` attribute not found on FluidFlow settings. Skipping velocity setup.")
+water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (5, 0, 0)  # Ensures water travels left to right
 
 # **Step 8: Save Scene as `.blend`**
 blend_output_path = os.path.join(blend_dir, "simulation_output.blend")
