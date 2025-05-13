@@ -38,24 +38,29 @@ else:
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
 domain = bpy.context.object
 domain.name = "FluidDomain"
-domain.scale = (3, 3, 3)  # Resize to surround the object
+domain.scale = (5, 5, 5)  # Expanded to ensure full coverage
 bpy.ops.object.transform_apply(scale=True)
 
 # Enable Fluid Simulation
 domain.modifiers.new(name="FluidSim", type='FLUID')
 domain.modifiers["FluidSim"].fluid_type = 'DOMAIN'
 domain.modifiers["FluidSim"].domain_settings.domain_type = 'LIQUID'
-domain.modifiers["FluidSim"].domain_settings.resolution_max = 64
+domain.modifiers["FluidSim"].domain_settings.resolution_max = 128  # Increased resolution for better detail
 
 # **Step 6: Configure Fluid Effector (Obstacle)**
-if "FluidEffector" in obj.modifiers:
+if "FluidEffector" not in obj.modifiers:
+    effector = obj.modifiers.new(name="FluidEffector", type='FLUID')
+    effector.fluid_type = 'EFFECTOR'
+    effector.effector_settings.use_plane_init = True
+    effector.effector_settings.surface_distance = 0.01  # Helps water recognize surface collision
+    print("✅ Added FluidEffector modifier to the object.")
+else:
     obj.modifiers["FluidEffector"].fluid_type = 'EFFECTOR'
     obj.modifiers["FluidEffector"].effector_settings.use_plane_init = True
-else:
-    print("⚠️ WARNING: FluidEffector modifier not found on object! Skipping effector settings.")
+    print("⚠️ FluidEffector modifier already present on object.")
 
 # **Step 7: Add Water Source**
-bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=(0, 0, 2))
+bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=(0, 0, 5))  # Moved higher above the disk
 water_source = bpy.context.object
 water_source.name = "WaterSource"
 
@@ -66,7 +71,8 @@ water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
 
 if hasattr(water_source.modifiers["FluidFlow"].flow_settings, "inflow_velocity"):
-    water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (0, 0, -1)  # Corrected attribute
+    water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (0, 0, -2)  # Stronger downward velocity
+    print("✅ Applied correct inflow velocity settings.")
 else:
     print("⚠️ WARNING: `inflow_velocity` attribute not found on FluidFlow settings. Skipping velocity setup.")
 
@@ -84,5 +90,6 @@ if os.path.exists(blend_output_path):
     print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
 else:
     print(f"❌ ERROR: `.blend` file was not created in '{blend_output_path}'. Check Blender execution.")
+
 
 
