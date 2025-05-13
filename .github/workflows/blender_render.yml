@@ -38,7 +38,13 @@ jobs:
         run: |
           which blender || echo "❌ Blender path is NOT found!"
 
-      # 6️⃣ Step: Search for Any `.blend` File in `testing-input-output/`
+      # 6️⃣ Step: Copy Velocity Data File into Working Directory
+      - name: Copy Velocity Data
+        run: |
+          cp velocity_data.json testing-input-output/velocity_data.json
+          ls -l testing-input-output/velocity_data.json || echo "❌ Velocity data file not found!"
+
+      # 7️⃣ Step: Search for Any `.blend` File in `testing-input-output/`
       - name: Detect Any `.blend` File
         run: |
           BLEND_FILE=$(ls testing-input-output/*.blend | head -n 1 || echo "")
@@ -49,16 +55,16 @@ jobs:
             echo "BLEND_FILE=$BLEND_FILE" >> $GITHUB_ENV
           fi
 
-      # 7️⃣ Step: Run Fluid Simulation Only If `.blend` File Exists
+      # 8️⃣ Step: Run Fluid Simulation with Velocity Data
       - name: Run Fluid Simulation
         run: |
           if [ -n "$BLEND_FILE" ]; then
-            ~/blender/blender -b --python fluid_simulation.py -- "$BLEND_FILE"
+            ~/blender/blender -b --python fluid_simulation.py -- "$BLEND_FILE" --velocity_data testing-input-output/velocity_data.json
           else
             echo "⚠️ SKIPPED: No `.blend` file found, simulation will not be executed."
           fi
 
-      # 8️⃣ Step: Verify `.blend` File Creation in `testing-input-output/`
+      # 🔟 Step: Verify `.blend` File Creation in `testing-input-output/`
       - name: Verify `.blend` File Creation
         run: |
           ls -l ./testing-input-output/ || echo "⚠️ WARNING: No `.blend` file was created."
