@@ -41,25 +41,13 @@ jobs:
       # 6️⃣ Step: Detect Velocity Data File in `testing-input-output/`
       - name: Detect Velocity Data File
         run: |
-          VELOCITY_FILE=$(ls testing-input-output/velocity_data.json 2>/dev/null || echo "")
-          if [ -z "$VELOCITY_FILE" ]; then
-            echo "⚠️ WARNING: No `velocity_data.json` file found. Fluid simulation may not run correctly!"
+          if [ -f testing-input-output/velocity_data.json ]; then
+            echo "✅ Found `velocity_data.json` in `testing-input-output/`."
           else
-            echo "✅ Found `velocity_data.json`: $VELOCITY_FILE"
-            echo "VELOCITY_FILE=$VELOCITY_FILE" >> $GITHUB_ENV
+            echo "⚠️ WARNING: No `velocity_data.json` found in `testing-input-output/`. Fluid simulation may not run correctly!"
           fi
 
-      # 7️⃣ Step: Copy Velocity Data File if Found
-      - name: Copy Velocity Data
-        run: |
-          if [ -n "$VELOCITY_FILE" ]; then
-            cp "$VELOCITY_FILE" testing-input-output/velocity_data.json
-            ls -l testing-input-output/velocity_data.json || echo "❌ Velocity data file copy failed!"
-          else
-            echo "⚠️ SKIPPED: No `velocity_data.json` found, skipping copy step."
-          fi
-
-      # 8️⃣ Step: Search for Any `.blend` File in `testing-input-output/`
+      # 7️⃣ Step: Search for Any `.blend` File in `testing-input-output/`
       - name: Detect Any `.blend` File
         run: |
           BLEND_FILE=$(ls testing-input-output/*.blend | head -n 1 || echo "")
@@ -70,13 +58,13 @@ jobs:
             echo "BLEND_FILE=$BLEND_FILE" >> $GITHUB_ENV
           fi
 
-      # 9️⃣ Step: Run Fluid Simulation with Velocity Data
+      # 8️⃣ Step: Run Fluid Simulation with Velocity Data
       - name: Run Fluid Simulation
         run: |
-          if [ -n "$BLEND_FILE" ]; then
+          if [ -n "$BLEND_FILE" ] && [ -f testing-input-output/velocity_data.json ]; then
             ~/blender/blender -b --python fluid_simulation.py -- "$BLEND_FILE" --velocity_data testing-input-output/velocity_data.json
           else
-            echo "⚠️ SKIPPED: No `.blend` file found, simulation will not be executed."
+            echo "⚠️ SKIPPED: Missing `.blend` or `velocity_data.json`, skipping simulation."
           fi
 
       # 🔟 Step: Verify `.blend` File Creation in `testing-input-output/`
