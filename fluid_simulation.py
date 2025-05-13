@@ -1,6 +1,7 @@
 import bpy
 import sys
 import os
+import json
 
 # **Step 1: Define the Directory Containing `.blend` Files**
 blend_dir = "./testing-input-output/"
@@ -22,7 +23,34 @@ print(f"🔹 Automatically detected .blend file: {blend_file}")
 bpy.ops.wm.open_mainfile(filepath=blend_file)
 print(f"✅ Successfully loaded '{blend_file}' into Blender!")
 
-# **Step 4: Find the First Mesh Object in the Scene**
+# ✅ Disable Gravity to Ensure Fluid Moves Based on Velocity Fields
+bpy.context.scene.gravity = (0, 0, 0)  # Turns off gravity entirely
+
+# **Step 4: Load Velocity Data from JSON File**
+velocity_file_path = os.path.join(blend_dir, "velocity_data.json")
+if os.path.exists(velocity_file_path):
+    with open(velocity_file_path, "r") as file:
+        velocity_data = json.load(file)
+        print("✅ Loaded velocity data from JSON file.")
+else:
+    print("❌ ERROR: Velocity data file not found!")
+    sys.exit(1)
+
+# **Step 5: Apply Velocity Values at Each Fluid Particle Position**
+for entry in velocity_data["fluid_velocity"]:
+    position = (entry["x"], entry["y"], entry["z"])
+    velocity = (entry["vx"], entry["vy"], entry["vz"])
+    
+    # Assign velocity to fluid particles using force fields
+    bpy.ops.object.force_field_add(type='WIND', location=position)
+    force_field = bpy.context.object
+    force_field.field.flow = velocity[0]  # Apply X velocity
+    force_field.field.strength = velocity[1]  # Apply Y velocity
+    force_field.field.flow += velocity[2]  # Apply Z velocity
+
+print("✅ Velocity fields applied successfully!")
+
+# **Step 6: Find the First Mesh Object in the Scene**
 objs = [obj for obj in bpy.data.objects if obj.type == 'MESH']
 
 if not objs:
