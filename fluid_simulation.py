@@ -41,7 +41,7 @@ obj.rotation_euler = (0, 1.5708, 0)  # 90-degree rotation, making disk perpendic
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
 domain = bpy.context.object
 domain.name = "FluidDomain"
-domain.scale = (25, 10, 5)  # Longer domain ensures smooth fluid travel past the disk
+domain.scale = (25, 10, 5)  # Longer domain supports smooth fluid travel past the disk
 bpy.ops.object.transform_apply(scale=True)
 
 # Enable Fluid Simulation
@@ -62,17 +62,26 @@ else:
     obj.modifiers["FluidEffector"].effector_settings.use_plane_init = True
     print("⚠️ FluidEffector modifier already present on object.")
 
-# ✅ Move Water Source to the Left (Instead of Above the Disk)
-bpy.ops.mesh.primitive_plane_add(size=12, location=(-12, 0, 0))  # Placed far left, ensuring horizontal inflow
+# ✅ Move Water Source to the Left to Ensure Proper Inflow Direction
+bpy.ops.mesh.primitive_plane_add(size=12, location=(-12, 0, 0))  # Water inflow from far left
 water_source = bpy.context.object
 water_source.name = "WaterSource"
 
-# ✅ Adjust Inflow Direction for River Flow (Move Water Left to Right)
+# ✅ Adjust Inflow Velocity to Ensure Left-to-Right Flow
 water_source.modifiers.new(name="FluidFlow", type='FLUID')
 water_source.modifiers["FluidFlow"].fluid_type = 'FLOW'
 water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
-water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (5, 0, 0)  # Ensures water travels left to right
+water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (10, 0, 0)  # Strong horizontal flow
+
+# ✅ Verify Fluid Domain Orientation to Prevent Vertical Movement
+domain.rotation_euler = (0, 0, 0)  # Reset rotation
+
+# ✅ Correct Animation Playback Direction
+bpy.context.scene.frame_start = 1
+bpy.context.scene.frame_end = 250
+bpy.context.scene.render.fps = 30  # Ensure proper animation frame rate
+bpy.context.scene.frame_current = 1  # Reset start position to prevent reversal
 
 # **Step 8: Save Scene as `.blend`**
 blend_output_path = os.path.join(blend_dir, "simulation_output.blend")
