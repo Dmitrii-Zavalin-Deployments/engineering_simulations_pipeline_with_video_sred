@@ -37,10 +37,21 @@ domain.modifiers["FluidSim"].fluid_type = 'DOMAIN'
 domain.modifiers["FluidSim"].domain_settings.domain_type = 'LIQUID'
 domain.modifiers["FluidSim"].domain_settings.gravity = (0, 0, 0)  # Disables Mantaflow gravity
 
-# ✅ Apply Stronger Inflow Velocity
-water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (15, 0, 0)  # Force left-to-right flow
+# ✅ Move Water Source to the Left to Ensure Proper Inflow Direction
+bpy.ops.mesh.primitive_plane_add(size=12, location=(-12, 0, 0))  # Water inflow from far left
+water_source = bpy.context.object
+water_source.name = "WaterSource"
 
-print("✅ Gravity removed, velocity applied!")
+# ✅ Apply Fluid Flow Modifier
+water_source.modifiers.new(name="FluidFlow", type='FLUID')
+water_source.modifiers["FluidFlow"].fluid_type = 'FLOW'
+water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
+water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
+
+# ✅ Adjust Inflow Velocity to Ensure Left-to-Right Flow
+water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (15, 0, 0)  # Strong horizontal flow
+
+print("✅ Gravity removed, water source created, velocity applied!")
 
 # **Step 8: Save `.blend` File**
 blend_output_path = os.path.join(blend_dir, "simulation_output.blend")
