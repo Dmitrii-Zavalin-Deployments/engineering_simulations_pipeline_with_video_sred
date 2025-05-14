@@ -38,13 +38,13 @@ jobs:
         run: |
           which blender || echo "❌ Blender path is NOT found!"
 
-      # 6️⃣ Step: Detect Velocity Data File in `testing-input-output/`
-      - name: Detect Velocity Data File
+      # 6️⃣ Step: Verify `velocity_data.json` Exists in `testing-input-output/`
+      - name: Verify Velocity Data File
         run: |
           if [ -f testing-input-output/velocity_data.json ]; then
             echo "✅ Found `velocity_data.json` in `testing-input-output/`."
           else
-            echo "⚠️ WARNING: No `velocity_data.json` found in `testing-input-output/`. Fluid simulation may not run correctly!"
+            echo "⚠️ WARNING: No `velocity_data.json` found. Fluid simulation may not run correctly!"
           fi
 
       # 7️⃣ Step: Search for Any `.blend` File in `testing-input-output/`
@@ -58,7 +58,7 @@ jobs:
             echo "BLEND_FILE=$BLEND_FILE" >> $GITHUB_ENV
           fi
 
-      # 8️⃣ Step: Run Fluid Simulation with Velocity Data
+      # 8️⃣ Step: Run Fluid Simulation with Updated Physics
       - name: Run Fluid Simulation
         run: |
           if [ -n "$BLEND_FILE" ] && [ -f testing-input-output/velocity_data.json ]; then
