@@ -23,8 +23,9 @@ print(f"🔹 Automatically detected .blend file: {blend_file}")
 bpy.ops.wm.open_mainfile(filepath=blend_file)
 print(f"✅ Successfully loaded '{blend_file}' into Blender!")
 
-# ✅ Disable Gravity to Ensure Fluid Moves Based on Velocity Fields
-bpy.context.scene.gravity = (0, 0, 0)  # Turns off gravity entirely
+# ✅ Ensure Gravity Is Fully Disabled in Scene & Fluid Domain Settings
+bpy.context.scene.gravity = (0, 0, 0)  # Completely disables gravity
+domain.modifiers["FluidSim"].domain_settings.gravity = (0, 0, 0)  # Disables Mantaflow gravity effects
 
 # **Step 4: Load Velocity Data from JSON File**
 velocity_file_path = os.path.join(blend_dir, "velocity_data.json")
@@ -41,12 +42,9 @@ for entry in velocity_data["fluid_velocity"]:
     position = (entry["x"], entry["y"], entry["z"])
     velocity = (entry["vx"], entry["vy"], entry["vz"])
     
-    # Assign velocity to fluid particles using force fields
-    bpy.ops.object.force_field_add(type='WIND', location=position)
-    force_field = bpy.context.object
-    force_field.field.flow = velocity[0]  # Apply X velocity
-    force_field.field.strength = velocity[1]  # Apply Y velocity
-    force_field.field.flow += velocity[2]  # Apply Z velocity
+    # ✅ Directly set velocity values (instead of force fields)
+    water_source = bpy.context.object
+    water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (velocity[0], velocity[1], velocity[2])
 
 print("✅ Velocity fields applied successfully!")
 
@@ -69,7 +67,7 @@ obj.rotation_euler = (0, 1.5708, 0)  # 90-degree rotation, making disk perpendic
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, 0))
 domain = bpy.context.object
 domain.name = "FluidDomain"
-domain.scale = (25, 10, 5)  # Longer domain supports smooth fluid travel past the disk
+domain.scale = (50, 10, 5)  # Expanded domain prevents vertical movement
 bpy.ops.object.transform_apply(scale=True)
 
 # Enable Fluid Simulation
@@ -100,7 +98,7 @@ water_source.modifiers.new(name="FluidFlow", type='FLUID')
 water_source.modifiers["FluidFlow"].fluid_type = 'FLOW'
 water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
-water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (10, 0, 0)  # Strong horizontal flow
+water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (15, 0, 0)  # Stronger horizontal flow
 
 # ✅ Verify Fluid Domain Orientation to Prevent Vertical Movement
 domain.rotation_euler = (0, 0, 0)  # Reset rotation
