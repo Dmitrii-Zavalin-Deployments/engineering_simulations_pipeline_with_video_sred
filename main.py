@@ -9,7 +9,7 @@ LOCAL_OUTPUT_FOLDER = "./RenderedOutput"
 LOG_FILE_PATH = "./download_log.txt"
 
 def prepare_files():
-    """Prepares `.blend` file for rendering."""
+    """Prepares `.blend` file for rendering and returns its path."""
 
     print("🔄 Preparing simulation output file...")
 
@@ -20,7 +20,7 @@ def prepare_files():
         sys.exit(1)
 
     print(f"✅ Found simulation output file: {blend_file}. Ready for Blender rendering.")
-
+    
     # 🔹 Commented out Dropbox download for now, but kept intact
     """
     print("🔄 Starting file download process...")
@@ -40,14 +40,13 @@ def prepare_files():
     print("✅ Files downloaded successfully! Ready for Blender processing.")
     """
 
+    return blend_file  # ✅ Return blend file path
+
 if __name__ == "__main__":
-    prepare_files()
+    blend_file = prepare_files()  # ✅ Capture returned blend file path
     
     # Run Blender rendering with local `.blend` file
     blender_render.run_blender_render(blend_file)
 
     print("✅ Rendering process completed! Frames saved in RenderedOutput.")
     print("📽️ Next step: Convert frames to a video in GitHub Actions.")
-
-
-
