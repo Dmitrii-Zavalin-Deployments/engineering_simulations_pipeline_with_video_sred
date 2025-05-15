@@ -3,6 +3,11 @@ import sys
 import os
 import json
 
+# ✅ Debugging: Confirm Blender Python Environment
+print("✅ Blender Python environment detected!")
+print(f"Python executable: {sys.executable}")
+print(f"Python path: {sys.path}")
+
 # **Step 1: Define the Directory Containing `.blend` Files**
 blend_dir = "./testing-input-output/"
 
@@ -48,11 +53,17 @@ water_source.modifiers["FluidFlow"].fluid_type = 'FLOW'
 water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
 
-# ✅ Adjust Inflow Velocity to Ensure Left-to-Right Flow
-water_source.modifiers["FluidFlow"].flow_settings.inflow_velocity = (15, 0, 0)  # Strong horizontal flow
+# ✅ Adjust Inflow Velocity to Ensure Left-to-Right Flow (Corrected Attribute Names)
+water_source.modifiers["FluidFlow"].flow_settings.velocity.x = 15  # Strong horizontal flow
+water_source.modifiers["FluidFlow"].flow_settings.velocity.y = 0   # No vertical movement
+water_source.modifiers["FluidFlow"].flow_settings.velocity.z = 0   # No depth movement
 
 print("✅ Gravity removed, water source created, velocity applied!")
 
 # **Step 8: Save `.blend` File**
 blend_output_path = os.path.join(blend_dir, "simulation_output.blend")
 bpy.ops.wm.save_mainfile(filepath=blend_output_path)
+print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
+
+
+
