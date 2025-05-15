@@ -53,10 +53,11 @@ water_source.modifiers["FluidFlow"].fluid_type = 'FLOW'
 water_source.modifiers["FluidFlow"].flow_settings.flow_type = 'LIQUID'
 water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
 
-# ✅ Adjust Inflow Velocity to Ensure Left-to-Right Flow (Corrected Attribute Names)
-water_source.modifiers["FluidFlow"].flow_settings.velocity.x = 15  # Strong horizontal flow
-water_source.modifiers["FluidFlow"].flow_settings.velocity.y = 0   # No vertical movement
-water_source.modifiers["FluidFlow"].flow_settings.velocity.z = 0   # No depth movement
+# ✅ Enable Initial Velocity for Inflow
+water_source.modifiers["FluidFlow"].flow_settings.use_initial_velocity = True
+
+# ✅ Set Correct Velocity Attributes
+water_source.modifiers["FluidFlow"].flow_settings.velocity_factor = (15, 0, 0)  # Strong horizontal flow
 
 print("✅ Gravity removed, water source created, velocity applied!")
 
@@ -64,6 +65,3 @@ print("✅ Gravity removed, water source created, velocity applied!")
 blend_output_path = os.path.join(blend_dir, "simulation_output.blend")
 bpy.ops.wm.save_mainfile(filepath=blend_output_path)
 print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
-
-
-
