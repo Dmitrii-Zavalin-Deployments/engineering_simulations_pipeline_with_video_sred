@@ -1,17 +1,28 @@
 import os
 import sys
-from download_dropbox_files import download_files_from_dropbox
 import blender_render  # Importing Blender rendering module
 
 # Define paths
 DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
-LOCAL_INPUT_FOLDER = "./BlenderInputFiles"
+LOCAL_INPUT_FOLDER = "./testing-input-output"  # Now using local simulation output
 LOCAL_OUTPUT_FOLDER = "./RenderedOutput"
 LOG_FILE_PATH = "./download_log.txt"
 
 def prepare_files():
-    """Downloads .blend files from Dropbox and prepares them for rendering."""
+    """Prepares `.blend` file for rendering."""
 
+    print("🔄 Preparing simulation output file...")
+
+    blend_file = os.path.join(LOCAL_INPUT_FOLDER, "simulation_output.blend")
+
+    if not os.path.exists(blend_file):
+        print("❌ Error: `simulation_output.blend` not found in `testing-input-output/`!")
+        sys.exit(1)
+
+    print(f"✅ Found simulation output file: {blend_file}. Ready for Blender rendering.")
+
+    # 🔹 Commented out Dropbox download for now, but kept intact
+    """
     print("🔄 Starting file download process...")
 
     REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
@@ -27,12 +38,13 @@ def prepare_files():
     download_files_from_dropbox(DROPBOX_INPUT_FOLDER, LOCAL_INPUT_FOLDER, REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET, LOG_FILE_PATH)
 
     print("✅ Files downloaded successfully! Ready for Blender processing.")
+    """
 
 if __name__ == "__main__":
     prepare_files()
     
-    # Run Blender rendering
-    blender_render.run_blender_render()
+    # Run Blender rendering with local `.blend` file
+    blender_render.run_blender_render(blend_file)
 
     print("✅ Rendering process completed! Frames saved in RenderedOutput.")
     print("📽️ Next step: Convert frames to a video in GitHub Actions.")
