@@ -27,7 +27,7 @@ jobs:
           mv blender-4.4.3-linux-x64 ~/blender
           sudo ln -s ~/blender/blender /usr/local/bin/blender
 
-      # 4️⃣ Step: Install Python Dependencies for Dropbox Operations
+      # 4️⃣ Step: Install Python Dependencies (for rendering)
       - name: Install Python Dependencies
         run: |
           pip install dropbox requests
@@ -42,12 +42,12 @@ jobs:
             echo "⚠️ No previous simulation_output.blend found—proceeding with new simulation."
           fi
 
-      # 6️⃣ Step: Run `fluid_simulation.py` to Create the `.blend` File
+      # 6️⃣ Step: Run Fluid Simulation Inside Blender
       - name: Run Fluid Simulation
         run: |
-          python3 fluid_simulation.py
+          ~/blender/blender -b --python fluid_simulation.py
 
-      # 7️⃣ Step: Verify `simulation_output.blend` Creation in `testing-input-output/`
+      # 7️⃣ Step: Verify `simulation_output.blend` Creation
       - name: Verify Simulation Output File
         run: |
           if [ -f testing-input-output/simulation_output.blend ]; then
@@ -57,26 +57,28 @@ jobs:
             exit 1
           fi
 
-      # 8️⃣ Step: Run `main.py` to Download Files and Render Frames
-      - name: Run `main.py` for Rendering
-        env:
-          APP_KEY: ${{ secrets.APP_KEY }}
-          APP_SECRET: ${{ secrets.APP_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+      # 8️⃣ Step: Run Blender Rendering Using Local `.blend` File
+      - name: Run Blender Rendering
         run: |
           python3 main.py
 
-      # 9️⃣ Step: Create Video from Rendered Frames
+      # 9️⃣ Step: Create Video from Rendered Frames and Move It to `testing-input-output/`
       - name: Create Video
         run: |
           chmod +x create_video.sh
           ./create_video.sh
+          mv ./RenderedOutput/video.mp4 ./testing-input-output/video.mp4
 
-      # 🔟 Step: Upload Final Video to Dropbox
-      - name: Upload Video to Dropbox
+      # 🔟 Step: Commit and Push `testing-input-output/` Folder
+      - name: Commit and Push Simulation Output
         env:
-          APP_KEY: ${{ secrets.APP_KEY }}
-          APP_SECRET: ${{ secrets.APP_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
+          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
         run: |
-          python3 upload_to_dropbox.py ./RenderedOutput/video.mp4 /simulations/Blender/output/video.mp4 $REFRESH_TOKEN $APP_KEY $APP_SECRET
+          git config --global user.name "$GIT_USER_NAME"
+          git config --global user.email "$GIT_USER_EMAIL"
+          
+          git add testing-input-output/
+          git status
+          git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added simulation_output.blend and video"
+          git push origin HEAD
