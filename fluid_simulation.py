@@ -56,8 +56,8 @@ water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
 # ✅ Enable Initial Velocity for Inflow
 water_source.modifiers["FluidFlow"].flow_settings.use_initial_velocity = True
 
-# ✅ Set Correct Velocity Attributes
-water_source.modifiers["FluidFlow"].flow_settings.velocity_factor = (15, 0, 0)  # Strong horizontal flow
+# ✅ Set Correct Velocity Attributes (Float Value)
+water_source.modifiers["FluidFlow"].flow_settings.velocity_factor = 15.0  # Strong horizontal flow
 
 print("✅ Gravity removed, water source created, velocity applied!")
 
