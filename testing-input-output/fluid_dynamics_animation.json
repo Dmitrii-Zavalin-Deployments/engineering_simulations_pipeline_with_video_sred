@@ -4,7 +4,7 @@
         "turbulence_model": "k-epsilon",
         "time_step": 0.001,
         "grid_resolution": [100, 100, 50],
-        "turbulence_intensity_definition": "Root-mean-square of velocity fluctuations normalized by mean velocity"
+        "blender_animation_format": "JSON Particles, Alembic Mesh, VDB Volume"
     },
     "global_parameters": {
         "drag_coefficient": {"value": 0.003, "unit": "dimensionless"},
