@@ -1,0 +1,33 @@
+{
+    "simulation_info": {
+        "solver": "Navier-Stokes",
+        "turbulence_model": "k-epsilon",
+        "time_step": 0.001,
+        "grid_resolution": [100, 100, 50],
+        "turbulence_intensity_definition": "Root-mean-square of velocity fluctuations normalized by mean velocity"
+    },
+    "global_parameters": {
+        "drag_coefficient": {"value": 0.003, "unit": "dimensionless"},
+        "lift_force": {"value": 5.2, "unit": "N"},
+        "energy_dissipation_rate": {"value": 0.02, "unit": "m²/s³", "description": "Domain-averaged"},
+        "turbulence_intensity": {"value": 0.1, "unit": "%", "description": "Domain-averaged"}
+    },
+    "data_points": [
+        {
+            "time": 0.01,
+            "coordinates": [0.1, 0.2, 0.0],
+            "velocity": {"components": [1.5, 0.2, 0.0], "unit": "m/s"},
+            "acceleration": {"components": [0.05, 0.01, 0.0], "unit": "m/s²"},
+            "pressure": {"value": 101325, "unit": "Pa"},
+            "temperature": {"value": 298, "unit": "K"},
+            "density": {"value": 1000, "unit": "kg/m³"},
+            "viscosity": {"value": 0.001002, "unit": "Pa·s"},
+            "vorticity": {"vector": [0.003, 0.001, 0.002], "unit": "1/s"},
+            "shear_stress": {
+                "fluid_shear": 2.5,
+                "wall_shear": {"vector": [0.5, 0.7, 0.0], "unit": "Pa"},
+                "surface_normal": {"vector": [0, 1, 0], "unit": "dimensionless"}
+            }
+        }
+    ]
+}
