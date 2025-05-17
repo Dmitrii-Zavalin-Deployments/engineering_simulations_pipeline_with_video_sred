@@ -30,7 +30,7 @@ jobs:
       # 4️⃣ Step: Install Python Dependencies (for rendering)
       - name: Install Python Dependencies
         run: |
-          pip install dropbox requests
+          pip install dropbox requests opencv-python numpy jsonschema scikit-image
 
       # 5️⃣ Step: Remove Previous `simulation_output.blend` File
       - name: Delete Previous Simulation Output
@@ -68,6 +68,25 @@ jobs:
           chmod +x create_video.sh
           ./create_video.sh
           mv ./RenderedOutput/video.mp4 ./testing-input-output/video.mp4
+
+      # 🔟 Step: Run Unit & Integration Tests for Video Validation
+      - name: Run Unit Tests  
+        run: pytest tests/test_input_validation.py --verbose  
+
+      - name: Run Output Validation Tests  
+        run: pytest tests/test_output_validation.py --verbose
+
+      - name: Run Blender Rendering Tests  
+        run: pytest tests/test_blender_render.py --verbose
+
+      - name: Run Fluid Motion Analysis Tests  
+        run: pytest tests/test_video_analysis.py --verbose
+
+      - name: Run Turbulence Validation Tests  
+        run: pytest tests/test_turbulence_validation.py --verbose
+
+      - name: Run Video Ground Truth Comparison Tests  
+        run: pytest tests/test_video_comparison.py --verbose
 
       # 🔟 Step: Commit and Push `testing-input-output/` Folder
       - name: Commit and Push Simulation Output
