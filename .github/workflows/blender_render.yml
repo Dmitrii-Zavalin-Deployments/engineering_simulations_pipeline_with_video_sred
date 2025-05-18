@@ -57,13 +57,28 @@ jobs:
             exit 1
           fi
 
-      # 8️⃣ Step: Set Working Directory and Run Fluid Simulation
+      # 8️⃣ Step: Debug - List files in `testing-input-output/`
+      - name: Debug: List files in `testing-input-output/`
+        run: |
+          ls -l testing-input-output/
+
+      # 9️⃣ Step: Verify `.blend` file exists before simulation
+      - name: Verify `.blend` file exists before simulation
+        run: |
+          if ls testing-input-output/*.blend 1> /dev/null 2>&1; then
+            echo "✅ .blend file detected. Proceeding..."
+          else
+            echo "❌ ERROR: No `.blend` file found in `testing-input-output/`!"
+            exit 1
+          fi
+
+      # 🔟 Step: Set Working Directory and Run Fluid Simulation
       - name: Run Fluid Simulation
         run: |
           cd $GITHUB_WORKSPACE
           ~/blender/blender -b --python $GITHUB_WORKSPACE/src/fluid_simulation.py
 
-      # 9️⃣ Step: Verify `simulation_output.blend` Creation
+      # 1️⃣1️⃣ Step: Verify `simulation_output.blend` Creation
       - name: Verify Simulation Output File
         run: |
           if [ -f testing-input-output/simulation_output.blend ]; then
@@ -73,19 +88,19 @@ jobs:
             exit 1
           fi
 
-      # 🔟 Step: Run Blender Rendering Using Local `.blend` File
+      # 1️⃣2️⃣ Step: Run Blender Rendering Using Local `.blend` File
       - name: Run Blender Rendering
         run: |
           python3 main.py
 
-      # 1️⃣1️⃣ Step: Create Video from Rendered Frames and Move It to `testing-input-output/`
+      # 1️⃣3️⃣ Step: Create Video from Rendered Frames and Move It to `testing-input-output/`
       - name: Create Video
         run: |
           chmod +x create_video.sh
           ./create_video.sh
           mv ./RenderedOutput/video.mp4 ./testing-input-output/video.mp4
 
-      # 1️⃣2️⃣ Step: Run Unit & Integration Tests for Video Validation
+      # 1️⃣4️⃣ Step: Run Unit & Integration Tests for Video Validation
       - name: Run Unit Tests  
         run: pytest tests/test_input_validation.py --verbose  
 
@@ -104,7 +119,7 @@ jobs:
       - name: Run Video Ground Truth Comparison Tests  
         run: pytest tests/test_video_comparison.py --verbose
 
-      # 1️⃣3️⃣ Step: Commit and Push `testing-input-output/` Folder
+      # 1️⃣5️⃣ Step: Commit and Push `testing-input-output/` Folder
       - name: Commit and Push Simulation Output
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
