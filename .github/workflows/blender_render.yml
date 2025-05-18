@@ -58,7 +58,7 @@ jobs:
           fi
 
       # 8️⃣ Step: Debug - List files in `testing-input-output/`
-      - name: Debug: List files in `testing-input-output/`
+      - name: Debug - List files in `testing-input-output/`
         run: |
           ls -l testing-input-output/
 
