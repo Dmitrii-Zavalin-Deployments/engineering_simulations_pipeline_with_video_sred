@@ -32,22 +32,27 @@ jobs:
         run: |
           pip install dropbox requests opencv-python numpy jsonschema scikit-image
 
-      # 5️⃣ Step: Ensure `testing-input-output/` Directory Exists
-      - name: Create testing-input-output Directory
+      # 5️⃣ Step: Ensure `data/testing-input-output/` Directory Exists
+      - name: Create `data/testing-input-output/` Directory
         run: |
-          mkdir -p testing-input-output
+          mkdir -p data/testing-input-output
 
-      # 6️⃣ Step: Remove Previous `simulation_output.blend` File
-      - name: Delete Previous Simulation Output
+      # 6️⃣ Step: Debug - List files in `data/testing-input-output/`
+      - name: Debug: List files in `data/testing-input-output/`
         run: |
-          if [ -f testing-input-output/simulation_output.blend ]; then
-            rm testing-input-output/simulation_output.blend
-            echo "🗑️ Deleted previous simulation_output.blend file."
+          ls -lah data/testing-input-output/
+
+      # 7️⃣ Step: Verify `fluid_dynamics_animation.json` exists before simulation
+      - name: Verify `fluid_dynamics_animation.json` exists before simulation
+        run: |
+          if [ -f data/testing-input-output/fluid_dynamics_animation.json ]; then
+            echo "✅ `fluid_dynamics_animation.json` detected. Proceeding..."
           else
-            echo "⚠️ No previous simulation_output.blend found—proceeding with new simulation."
+            echo "❌ ERROR: No `fluid_dynamics_animation.json` found in `data/testing-input-output/`!"
+            exit 1
           fi
 
-      # 7️⃣ Step: Verify Fluid Simulation Script Exists
+      # 8️⃣ Step: Verify Fluid Simulation Script Exists
       - name: Verify Fluid Simulation Script Exists
         run: |
           if [ -f src/fluid_simulation.py ]; then
@@ -57,50 +62,25 @@ jobs:
             exit 1
           fi
 
-      # 8️⃣ Step: Debug - List files in `testing-input-output/`
-      - name: Debug - List files in `testing-input-output/`
-        run: |
-          ls -lah testing-input-output/
-
-      # 9️⃣ Step: Verify `.blend` file exists before simulation
-      - name: Verify `.blend` file exists before simulation
-        run: |
-          if find testing-input-output -name "*.blend" | grep -q .; then
-            echo "✅ .blend file detected. Proceeding..."
-          else
-            echo "❌ ERROR: No `.blend` file found in `testing-input-output/`!"
-            exit 1
-          fi
-
-      # 🔟 Step: Set Working Directory and Run Fluid Simulation
+      # 9️⃣ Step: Set Working Directory and Run Fluid Simulation
       - name: Run Fluid Simulation
         run: |
           cd $GITHUB_WORKSPACE
-          ~/blender/blender -b --python $GITHUB_WORKSPACE/src/fluid_simulation.py
+          python3 src/fluid_simulation.py
 
-      # 1️⃣1️⃣ Step: Verify `simulation_output.blend` Creation
-      - name: Verify Simulation Output File
-        run: |
-          if [ -f testing-input-output/simulation_output.blend ]; then
-            echo "✅ Simulation completed—found new simulation_output.blend file."
-          else
-            echo "❌ ERROR: No new `simulation_output.blend` file detected!"
-            exit 1
-          fi
-
-      # 1️⃣2️⃣ Step: Run Blender Rendering Using Local `.blend` File
-      - name: Run Blender Rendering
+      # 🔟 Step: Run Video Rendering
+      - name: Run Video Rendering
         run: |
           python3 main.py
 
-      # 1️⃣3️⃣ Step: Create Video from Rendered Frames and Move It to `testing-input-output/`
+      # 1️⃣1️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
       - name: Create Video
         run: |
           chmod +x create_video.sh
           ./create_video.sh
-          mv ./RenderedOutput/video.mp4 ./testing-input-output/video.mp4
+          mv ./RenderedOutput/video.mp4 ./data/testing-input-output/video.mp4
 
-      # 1️⃣4️⃣ Step: Run Unit & Integration Tests for Video Validation
+      # 1️⃣2️⃣ Step: Run Unit & Integration Tests for Video Validation
       - name: Run Unit Tests  
         run: pytest tests/test_input_validation.py --verbose  
 
@@ -119,7 +99,7 @@ jobs:
       - name: Run Video Ground Truth Comparison Tests  
         run: pytest tests/test_video_comparison.py --verbose
 
-      # 1️⃣5️⃣ Step: Commit and Push `testing-input-output/` Folder
+      # 1️⃣3️⃣ Step: Commit and Push `data/testing-input-output/` Folder
       - name: Commit and Push Simulation Output
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
@@ -128,7 +108,7 @@ jobs:
           git config --global user.name "$GIT_USER_NAME"
           git config --global user.email "$GIT_USER_EMAIL"
           
-          git add testing-input-output/
+          git add data/testing-input-output/
           git status
-          git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added simulation_output.blend and video"
+          git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added fluid_dynamics_animation.json and video"
           git push origin HEAD
