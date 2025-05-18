@@ -38,7 +38,7 @@ jobs:
           mkdir -p data/testing-input-output
 
       # 6️⃣ Step: Debug - List files in `data/testing-input-output/`
-      - name: Debug: List files in `data/testing-input-output/`
+      - name: Debug - List files in `data/testing-input-output/`
         run: |
           ls -lah data/testing-input-output/
 
