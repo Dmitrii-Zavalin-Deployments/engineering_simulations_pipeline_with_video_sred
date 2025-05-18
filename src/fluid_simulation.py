@@ -28,12 +28,14 @@ print(f"🔹 Simulation Parameters: {json.dumps(simulation_data, indent=2)}")
 # ✅ Process simulation data (example workflow)
 velocity_field = simulation_data.get("velocity_field", [])
 gravity_enabled = simulation_data.get("gravity_enabled", False)
+initial_velocity = simulation_data.get("initial_velocity", 15.0)
 
 if not velocity_field:
     print("❌ ERROR: Missing velocity field data!")
     exit(1)
 
 print(f"✅ Gravity Enabled: {gravity_enabled}")
+print(f"✅ Initial Velocity: {initial_velocity}")
 print("✅ Setting up Blender fluid simulation environment...")
 
 # ✅ Set Up Fluid Domain Before Applying Gravity
@@ -63,9 +65,13 @@ water_source.modifiers["FluidFlow"].flow_settings.flow_behavior = 'INFLOW'
 
 # ✅ Enable Initial Velocity for Inflow
 water_source.modifiers["FluidFlow"].flow_settings.use_initial_velocity = True
-water_source.modifiers["FluidFlow"].flow_settings.velocity_factor = simulation_data.get("initial_velocity", 15.0)
+water_source.modifiers["FluidFlow"].flow_settings.velocity_factor = initial_velocity
 
 print("✅ Gravity adjusted based on JSON data, water source created, velocity applied!")
+
+# ✅ Iterate through velocity field data (Example fluid dynamics simulation)
+for frame, velocity in enumerate(velocity_field):
+    print(f"🔹 Frame {frame}: Applying velocity {velocity}")
 
 # ✅ Save the Updated `.blend` File (If Required)
 blend_output_path = os.path.join(data_dir, "simulation_output.blend")
