@@ -11,6 +11,11 @@ print(f"Python path: {sys.path}")
 # **Step 1: Define the Directory Containing `.blend` Files**
 blend_dir = "./testing-input-output/"
 
+# ✅ Ensure `testing-input-output/` directory exists
+if not os.path.exists(blend_dir):
+    os.makedirs(blend_dir)
+    print(f"✅ Created missing directory: {blend_dir}")
+
 # **Step 2: Find Any `.blend` File in the Directory**
 blend_files = [f for f in os.listdir(blend_dir) if f.endswith(".blend")]
 
@@ -65,3 +70,6 @@ print("✅ Gravity removed, water source created, velocity applied!")
 blend_output_path = os.path.join(blend_dir, "simulation_output.blend")
 bpy.ops.wm.save_mainfile(filepath=blend_output_path)
 print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
+
+
+
