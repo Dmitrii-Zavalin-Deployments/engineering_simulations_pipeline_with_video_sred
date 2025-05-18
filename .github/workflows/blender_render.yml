@@ -65,7 +65,7 @@ jobs:
       # 9️⃣ Step: Verify `.blend` file exists before simulation
       - name: Verify `.blend` file exists before simulation
         run: |
-          if ls testing-input-output/*.blend 1> /dev/null 2>&1; then
+          if [ "$(ls testing-input-output/*.blend 2>/dev/null)" ]; then
             echo "✅ .blend file detected. Proceeding..."
           else
             echo "❌ ERROR: No `.blend` file found in `testing-input-output/`!"
