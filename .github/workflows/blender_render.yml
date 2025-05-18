@@ -62,11 +62,11 @@ jobs:
             exit 1
           fi
 
-      # 9️⃣ Step: Set Working Directory and Run Fluid Simulation
-      - name: Run Fluid Simulation
+      # 9️⃣ Step: Set Working Directory and Run Fluid Simulation Inside Blender
+      - name: Run Fluid Simulation Inside Blender
         run: |
           cd $GITHUB_WORKSPACE
-          python3 src/fluid_simulation.py
+          ~/blender/blender -b --python src/fluid_simulation.py
 
       # 🔟 Step: Run Video Rendering
       - name: Run Video Rendering
