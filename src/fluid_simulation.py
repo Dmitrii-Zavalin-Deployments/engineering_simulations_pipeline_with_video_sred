@@ -20,7 +20,7 @@ if not os.path.exists(blend_dir):
 blend_files = [f for f in os.listdir(blend_dir) if f.endswith(".blend")]
 
 if not blend_files:
-    print("❌ Error: No `.blend` file found in directory!")
+    print("❌ ERROR: No `.blend` file found in directory!")
     sys.exit(1)
 
 # Take the first `.blend` file found
@@ -74,6 +74,7 @@ print(f"🔹 Attempting to save .blend file to: {blend_output_path}")
 
 bpy.ops.wm.save_mainfile(filepath=blend_output_path)
 
+# ✅ Verify `.blend` file existence after saving
 if os.path.exists(blend_output_path):
     print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
 else:
