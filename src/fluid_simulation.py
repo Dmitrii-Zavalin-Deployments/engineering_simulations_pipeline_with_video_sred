@@ -68,8 +68,14 @@ print("✅ Gravity removed, water source created, velocity applied!")
 
 # **Step 8: Save `.blend` File**
 blend_output_path = os.path.join(blend_dir, "simulation_output.blend")
+
+# ✅ Debugging: Print where the `.blend` file is being saved
+print(f"🔹 Attempting to save .blend file to: {blend_output_path}")
+
 bpy.ops.wm.save_mainfile(filepath=blend_output_path)
-print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
 
-
-
+if os.path.exists(blend_output_path):
+    print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
+else:
+    print("❌ ERROR: Failed to save the .blend file!")
+    sys.exit(1)
