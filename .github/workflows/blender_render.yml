@@ -32,7 +32,12 @@ jobs:
         run: |
           pip install dropbox requests opencv-python numpy jsonschema scikit-image
 
-      # 5️⃣ Step: Remove Previous `simulation_output.blend` File
+      # 5️⃣ Step: Ensure `testing-input-output/` Directory Exists
+      - name: Create testing-input-output Directory
+        run: |
+          mkdir -p testing-input-output
+
+      # 6️⃣ Step: Remove Previous `simulation_output.blend` File
       - name: Delete Previous Simulation Output
         run: |
           if [ -f testing-input-output/simulation_output.blend ]; then
@@ -42,7 +47,7 @@ jobs:
             echo "⚠️ No previous simulation_output.blend found—proceeding with new simulation."
           fi
 
-      # 6️⃣ Step: Verify Fluid Simulation Script Exists
+      # 7️⃣ Step: Verify Fluid Simulation Script Exists
       - name: Verify Fluid Simulation Script Exists
         run: |
           if [ -f src/fluid_simulation.py ]; then
@@ -52,12 +57,13 @@ jobs:
             exit 1
           fi
 
-      # 7️⃣ Step: Run Fluid Simulation Inside Blender
+      # 8️⃣ Step: Set Working Directory and Run Fluid Simulation
       - name: Run Fluid Simulation
         run: |
+          cd $GITHUB_WORKSPACE
           ~/blender/blender -b --python $GITHUB_WORKSPACE/src/fluid_simulation.py
 
-      # 8️⃣ Step: Verify `simulation_output.blend` Creation
+      # 9️⃣ Step: Verify `simulation_output.blend` Creation
       - name: Verify Simulation Output File
         run: |
           if [ -f testing-input-output/simulation_output.blend ]; then
@@ -67,19 +73,19 @@ jobs:
             exit 1
           fi
 
-      # 9️⃣ Step: Run Blender Rendering Using Local `.blend` File
+      # 🔟 Step: Run Blender Rendering Using Local `.blend` File
       - name: Run Blender Rendering
         run: |
           python3 main.py
 
-      # 🔟 Step: Create Video from Rendered Frames and Move It to `testing-input-output/`
+      # 1️⃣1️⃣ Step: Create Video from Rendered Frames and Move It to `testing-input-output/`
       - name: Create Video
         run: |
           chmod +x create_video.sh
           ./create_video.sh
           mv ./RenderedOutput/video.mp4 ./testing-input-output/video.mp4
 
-      # 1️⃣1️⃣ Step: Run Unit & Integration Tests for Video Validation
+      # 1️⃣2️⃣ Step: Run Unit & Integration Tests for Video Validation
       - name: Run Unit Tests  
         run: pytest tests/test_input_validation.py --verbose  
 
@@ -98,7 +104,7 @@ jobs:
       - name: Run Video Ground Truth Comparison Tests  
         run: pytest tests/test_video_comparison.py --verbose
 
-      # 1️⃣2️⃣ Step: Commit and Push `testing-input-output/` Folder
+      # 1️⃣3️⃣ Step: Commit and Push `testing-input-output/` Folder
       - name: Commit and Push Simulation Output
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
@@ -111,6 +117,3 @@ jobs:
           git status
           git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added simulation_output.blend and video"
           git push origin HEAD
-
-
-
