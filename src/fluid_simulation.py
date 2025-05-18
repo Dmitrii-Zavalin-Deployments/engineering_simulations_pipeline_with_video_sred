@@ -25,13 +25,13 @@ print("✅ Successfully loaded fluid dynamics simulation parameters!")
 # ✅ Debugging: Print parsed simulation data
 print(f"🔹 Simulation Parameters: {json.dumps(simulation_data, indent=2)}")
 
-# ✅ Process simulation data (example workflow)
-velocity_field = simulation_data.get("velocity_field", [])
+# ✅ Extract velocity components dynamically from `data_points`
+velocity_field = [dp["velocity"]["components"] for dp in simulation_data.get("data_points", []) if "velocity" in dp]
 gravity_enabled = simulation_data.get("gravity_enabled", False)
 initial_velocity = simulation_data.get("initial_velocity", 15.0)
 
 if not velocity_field:
-    print("❌ ERROR: Missing velocity field data!")
+    print("❌ ERROR: Could not extract velocity field data from `data_points`. Check JSON structure.")
     exit(1)
 
 print(f"✅ Gravity Enabled: {gravity_enabled}")
