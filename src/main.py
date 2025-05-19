@@ -1,12 +1,13 @@
 import os
 import sys
+import json
 import blender_render  # Importing Blender rendering module
 
 # Define paths
 DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
 LOCAL_INPUT_FOLDER = os.path.join("..", "data", "testing-input-output")  # Corrected relative path
-LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")             # Corrected relative path
-LOG_FILE_PATH = os.path.join("..", "download_log.txt")                # Corrected relative path
+LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")                      # Corrected relative path
+LOG_FILE_PATH = os.path.join("..", "download_log.txt")                        # Corrected relative path
 JSON_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_dynamics_animation.json")
 
 def prepare_files():
@@ -32,8 +33,15 @@ def prepare_files():
     print(f"✅ Found simulation input file: {JSON_FILE}. Ready for processing.")
 
     # ✅ Load fluid dynamics simulation parameters
-    with open(JSON_FILE, "r") as file:
-        simulation_data = file.read()
+    try:
+        with open(JSON_FILE, "r") as file:
+            simulation_data = json.load(file)
+    except json.JSONDecodeError:
+        print(f"❌ Error: Could not decode JSON from `{JSON_FILE}`!")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ An unexpected error occurred during JSON loading: {e}")
+        sys.exit(1)
 
     print("✅ Fluid dynamics simulation data loaded successfully!")
 
