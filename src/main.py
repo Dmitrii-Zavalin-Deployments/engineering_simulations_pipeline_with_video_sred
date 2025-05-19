@@ -4,23 +4,28 @@ import blender_render  # Importing Blender rendering module
 
 # Define paths
 DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
-LOCAL_INPUT_FOLDER = "./testing-input-output"  # Now using local simulation output
+LOCAL_INPUT_FOLDER = "./data/testing-input-output"  # Now using local JSON-based simulation output
 LOCAL_OUTPUT_FOLDER = "./RenderedOutput"
 LOG_FILE_PATH = "./download_log.txt"
+JSON_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_dynamics_animation.json")
 
 def prepare_files():
-    """Prepares `.blend` file for rendering and returns its path."""
+    """Prepares JSON file for rendering and returns simulation parameters."""
 
-    print("🔄 Preparing simulation output file...")
+    print("🔄 Preparing fluid dynamics simulation input...")
 
-    blend_file = os.path.join(LOCAL_INPUT_FOLDER, "simulation_output.blend")
-
-    if not os.path.exists(blend_file):
-        print("❌ Error: `simulation_output.blend` not found in `testing-input-output/`!")
+    if not os.path.exists(JSON_FILE):
+        print("❌ Error: `fluid_dynamics_animation.json` not found in `data/testing-input-output/`!")
         sys.exit(1)
 
-    print(f"✅ Found simulation output file: {blend_file}. Ready for Blender rendering.")
-    
+    print(f"✅ Found simulation input file: {JSON_FILE}. Ready for processing.")
+
+    # ✅ Load fluid dynamics simulation parameters
+    with open(JSON_FILE, "r") as file:
+        simulation_data = file.read()
+
+    print("✅ Fluid dynamics simulation data loaded successfully!")
+
     # 🔹 Commented out Dropbox download for now, but kept intact
     """
     print("🔄 Starting file download process...")
@@ -40,13 +45,13 @@ def prepare_files():
     print("✅ Files downloaded successfully! Ready for Blender processing.")
     """
 
-    return blend_file  # ✅ Return blend file path
+    return simulation_data  # ✅ Return simulation data
 
 if __name__ == "__main__":
-    blend_file = prepare_files()  # ✅ Capture returned blend file path
+    simulation_data = prepare_files()  # ✅ Capture simulation parameters
     
-    # Run Blender rendering with local `.blend` file
-    blender_render.run_blender_render(blend_file)
+    # Run Blender rendering with JSON-based simulation input
+    blender_render.run_blender_render(simulation_data)
 
     print("✅ Rendering process completed! Frames saved in RenderedOutput.")
     print("📽️ Next step: Convert frames to a video in GitHub Actions.")
