@@ -4,9 +4,9 @@ import blender_render  # Importing Blender rendering module
 
 # Define paths
 DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
-LOCAL_INPUT_FOLDER = "./data/testing-input-output"  # Now using local JSON-based simulation output
-LOCAL_OUTPUT_FOLDER = "./RenderedOutput"
-LOG_FILE_PATH = "./download_log.txt"
+LOCAL_INPUT_FOLDER = os.path.join(os.getcwd(), "data/testing-input-output")  # Ensures absolute path
+LOCAL_OUTPUT_FOLDER = os.path.join(os.getcwd(), "RenderedOutput")
+LOG_FILE_PATH = os.path.join(os.getcwd(), "download_log.txt")
 JSON_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_dynamics_animation.json")
 
 def prepare_files():
@@ -14,8 +14,14 @@ def prepare_files():
 
     print("🔄 Preparing fluid dynamics simulation input...")
 
+    # ✅ Ensure the correct directory exists
+    if not os.path.exists(LOCAL_INPUT_FOLDER):
+        print(f"⚠️ Warning: `{LOCAL_INPUT_FOLDER}` does not exist. Creating directory...")
+        os.makedirs(LOCAL_INPUT_FOLDER, exist_ok=True)
+
+    # ✅ Verify the JSON file exists
     if not os.path.exists(JSON_FILE):
-        print("❌ Error: `fluid_dynamics_animation.json` not found in `data/testing-input-output/`!")
+        print(f"❌ Error: `fluid_dynamics_animation.json` not found in `{LOCAL_INPUT_FOLDER}`!")
         sys.exit(1)
 
     print(f"✅ Found simulation input file: {JSON_FILE}. Ready for processing.")
