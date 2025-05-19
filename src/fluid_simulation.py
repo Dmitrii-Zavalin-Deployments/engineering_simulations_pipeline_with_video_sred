@@ -3,7 +3,7 @@ import os
 import json
 
 # ✅ Define the directory for simulation data relative to the repository root
-data_dir = os.path.join("..", "data", "testing-input-output")
+data_dir = os.path.join("data", "testing-input-output")
 json_file = os.path.join(data_dir, "fluid_dynamics_animation.json")
 
 # ✅ Ensure `data/testing-input-output/` exists
@@ -13,7 +13,7 @@ if not os.path.exists(data_dir):
 
 # ✅ Verify `fluid_dynamics_animation.json` exists
 if not os.path.exists(json_file):
-    print("❌ ERROR: No `fluid_dynamics_animation.json` found!")
+    print(f"❌ ERROR: No `{json_file}` found!")
     exit(1)
 
 # ✅ Load fluid dynamics simulation parameters
