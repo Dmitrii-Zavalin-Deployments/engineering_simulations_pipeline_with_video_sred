@@ -15,9 +15,9 @@ def prepare_files():
     print("🔄 Preparing fluid dynamics simulation input...")
 
     # ✅ Debugging: Print expected paths
-    print(f"🔍 Checking existence of `{LOCAL_INPUT_FOLDER}`")
+    print(f"🔍 Expected simulation input directory: {LOCAL_INPUT_FOLDER}")
     print(f"🔍 Listing files in `{LOCAL_INPUT_FOLDER}`:")
-    os.system(f"ls -lah {LOCAL_INPUT_FOLDER}")
+    os.system(f"ls -lah {LOCAL_INPUT_FOLDER} || echo '⚠️ Directory not found, continuing...'")
 
     # ✅ Ensure the correct directory exists
     if not os.path.exists(LOCAL_INPUT_FOLDER):
