@@ -42,7 +42,14 @@ jobs:
         run: |
           ls -lah data/testing-input-output/
 
-      # 7️⃣ Step: Verify `fluid_dynamics_animation.json` exists before simulation
+      # 7️⃣ Step: Debug - Verify `fluid_dynamics_animation.json` Paths
+      - name: Debug - Verify `fluid_dynamics_animation.json` Paths
+        run: |
+          echo "🔍 Checking existence of `data/testing-input-output/`"
+          echo "🔍 Listing files inside `data/testing-input-output/`:"
+          ls -lah data/testing-input-output/
+
+      # 8️⃣ Step: Verify `fluid_dynamics_animation.json` exists before simulation
       - name: Verify `fluid_dynamics_animation.json` exists before simulation
         run: |
           if [ -f data/testing-input-output/fluid_dynamics_animation.json ]; then
@@ -52,7 +59,7 @@ jobs:
             exit 1
           fi
 
-      # 8️⃣ Step: Verify Fluid Simulation Script Exists
+      # 9️⃣ Step: Verify Fluid Simulation Script Exists
       - name: Verify Fluid Simulation Script Exists
         run: |
           if [ -f src/fluid_simulation.py ]; then
@@ -62,31 +69,31 @@ jobs:
             exit 1
           fi
 
-      # 9️⃣ Step: Set Working Directory and Run Fluid Simulation Inside Blender
+      # 🔟 Step: Set Working Directory and Run Fluid Simulation Inside Blender
       - name: Run Fluid Simulation Inside Blender
         run: |
           cd $GITHUB_WORKSPACE
           ~/blender/blender -b --python src/fluid_simulation.py
 
-      # 🔟 Step: Debug - Verify `main.py` Exists
+      # 1️⃣1️⃣ Step: Debug - Verify `main.py` Exists
       - name: Debug - Verify `main.py` Exists
         run: |
           ls -lah src/
 
-      # 1️⃣1️⃣ Step: Run Video Rendering from Correct Directory
+      # 1️⃣2️⃣ Step: Run Video Rendering from Correct Directory
       - name: Run Video Rendering
         run: |
           cd src
           python3 main.py
 
-      # 1️⃣2️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
+      # 1️⃣3️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
       - name: Create Video
         run: |
           chmod +x src/create_video.sh
           ./src/create_video.sh
           mv ./RenderedOutput/video.mp4 ./data/testing-input-output/video.mp4
 
-      # 1️⃣3️⃣ Step: Run Unit & Integration Tests for Video Validation
+      # 1️⃣4️⃣ Step: Run Unit & Integration Tests for Video Validation
       - name: Run Unit Tests  
         run: pytest tests/test_input_validation.py --verbose  
 
@@ -105,7 +112,7 @@ jobs:
       - name: Run Video Ground Truth Comparison Tests  
         run: pytest tests/test_video_comparison.py --verbose
 
-      # 1️⃣4️⃣ Step: Commit and Push `data/testing-input-output/` Folder
+      # 1️⃣5️⃣ Step: Commit and Push `data/testing-input-output/` Folder
       - name: Commit and Push Simulation Output
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
