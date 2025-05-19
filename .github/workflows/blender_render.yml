@@ -13,13 +13,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Step: Install System Dependencies
+      # 2️⃣ Step: Debug - List Repository Contents at Root
+      - name: Debug - List Repository Contents at Root
+        run: |
+          echo "🔍 Listing contents of the repository root:"
+          ls -lah $GITHUB_WORKSPACE/
+
+      # 3️⃣ Step: Install System Dependencies
       - name: Install System Dependencies
         run: |
           sudo apt update
           sudo apt install -y python3 python3-pip libegl1 ffmpeg
 
-      # 3️⃣ Step: Install Blender
+      # 4️⃣ Step: Install Blender
       - name: Install Blender
         run: |
           wget https://download.blender.org/release/Blender4.4/blender-4.4.3-linux-x64.tar.xz
@@ -27,29 +33,45 @@ jobs:
           mv blender-4.4.3-linux-x64 ~/blender
           sudo ln -s ~/blender/blender /usr/local/bin/blender
 
-      # 4️⃣ Step: Install Python Dependencies (for rendering)
+      # 5️⃣ Step: Install Python Dependencies (for rendering)
       - name: Install Python Dependencies
         run: |
           pip install dropbox requests opencv-python numpy jsonschema scikit-image
 
-      # 5️⃣ Step: Ensure `data/testing-input-output/` Directory Exists
+      # 6️⃣ Step: Debug - List Contents of `src/` Directory
+      - name: Debug - List Contents of `src/` Directory
+        run: |
+          echo "🔍 Listing contents of the src/ directory:"
+          ls -lah src/
+
+      # 7️⃣ Step: Debug - List Contents of `src/data/` Directory
+      - name: Debug - List Contents of `src/data/` Directory
+        run: |
+          echo "🔍 Listing contents of the src/data/ directory:"
+          ls -lah src/data/
+
+      # 8️⃣ Step: Ensure `data/testing-input-output/` Directory Exists
       - name: Create `data/testing-input-output/` Directory
         run: |
           mkdir -p data/testing-input-output
 
-      # 6️⃣ Step: Debug - List files in `data/testing-input-output/`
-      - name: Debug - List files in `data/testing-input-output/`
+      # 9️⃣ Step: Debug - List files in `data/testing-input-output/` Immediately After Creation
+      - name: Debug - List files in `data/testing-input-output/` (After Creation)
         run: |
+          echo "🔍 Listing contents of data/testing-input-output/ after creation:"
           ls -lah data/testing-input-output/
 
-      # 7️⃣ Step: Debug - Verify `fluid_dynamics_animation.json` Paths
-      - name: Debug - Verify `fluid_dynamics_animation.json` Paths
+      # 🔟 Step: Debug - Verify `fluid_dynamics_animation.json` Paths Before Use
+      - name: Debug - Verify `fluid_dynamics_animation.json` Paths Before Use
         run: |
-          echo "🔍 Checking existence of `data/testing-input-output/`"
-          echo "🔍 Listing files inside `data/testing-input-output/`:"
-          ls -lah data/testing-input-output/
+          echo "🔍 Checking existence of data/testing-input-output/fluid_dynamics_animation.json BEFORE simulation:"
+          if [ -f data/testing-input-output/fluid_dynamics_animation.json ]; then
+            echo "✅ FOUND: data/testing-input-output/fluid_dynamics_animation.json"
+          else
+            echo "❌ NOT FOUND: data/testing-input-output/fluid_dynamics_animation.json"
+          fi
 
-      # 8️⃣ Step: Verify `fluid_dynamics_animation.json` exists before simulation
+      # 1️⃣1️⃣ Step: Verify `fluid_dynamics_animation.json` exists before simulation
       - name: Verify `fluid_dynamics_animation.json` exists before simulation
         run: |
           if [ -f data/testing-input-output/fluid_dynamics_animation.json ]; then
@@ -59,7 +81,7 @@ jobs:
             exit 1
           fi
 
-      # 9️⃣ Step: Verify Fluid Simulation Script Exists
+      # 1️⃣2️⃣ Step: Verify Fluid Simulation Script Exists
       - name: Verify Fluid Simulation Script Exists
         run: |
           if [ -f src/fluid_simulation.py ]; then
@@ -69,50 +91,64 @@ jobs:
             exit 1
           fi
 
-      # 🔟 Step: Set Working Directory and Run Fluid Simulation Inside Blender
+      # 1️⃣3️⃣ Step: Set Working Directory and Run Fluid Simulation Inside Blender
       - name: Run Fluid Simulation Inside Blender
         run: |
           cd $GITHUB_WORKSPACE
           ~/blender/blender -b --python src/fluid_simulation.py
 
-      # 1️⃣1️⃣ Step: Debug - Verify `main.py` Exists
+      # 1️⃣4️⃣ Step: Debug - Verify Contents of `data/testing-input-output/` After Simulation
+      - name: Debug - Verify Contents of `data/testing-input-output/` After Simulation
+        run: |
+          echo "🔍 Listing contents of data/testing-input-output/ AFTER simulation:"
+          ls -lah data/testing-input-output/
+
+      # 1️⃣5️⃣ Step: Debug - Verify `main.py` Exists
       - name: Debug - Verify `main.py` Exists
         run: |
+          echo "🔍 Listing contents of src/ to find main.py:"
           ls -lah src/
 
-      # 1️⃣2️⃣ Step: Run Video Rendering from Correct Directory
+      # 1️⃣6️⃣ Step: Run Video Rendering from Correct Directory
       - name: Run Video Rendering
         run: |
           cd src
           python3 main.py
 
-      # 1️⃣3️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
+      # 1️⃣7️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
       - name: Create Video
         run: |
           chmod +x src/create_video.sh
           ./src/create_video.sh
+          mkdir -p ./data/testing-input-output/ # Ensure the directory exists before moving
           mv ./RenderedOutput/video.mp4 ./data/testing-input-output/video.mp4
 
-      # 1️⃣4️⃣ Step: Run Unit & Integration Tests for Video Validation
-      - name: Run Unit Tests  
-        run: pytest tests/test_input_validation.py --verbose  
+      # 1️⃣8️⃣ Step: Debug - List Contents of `data/testing-input-output/` After Video Creation
+      - name: Debug - List Contents of `data/testing-input-output/` After Video Creation
+        run: |
+          echo "🔍 Listing contents of data/testing-input-output/ AFTER video creation:"
+          ls -lah data/testing-input-output/
 
-      - name: Run Output Validation Tests  
+      # 1️⃣9️⃣ Step: Run Unit & Integration Tests for Video Validation
+      - name: Run Unit Tests
+        run: pytest tests/test_input_validation.py --verbose
+
+      - name: Run Output Validation Tests
         run: pytest tests/test_output_validation.py --verbose
 
-      - name: Run Blender Rendering Tests  
+      - name: Run Blender Rendering Tests
         run: pytest tests/test_blender_render.py --verbose
 
-      - name: Run Fluid Motion Analysis Tests  
+      - name: Run Fluid Motion Analysis Tests
         run: pytest tests/test_video_analysis.py --verbose
 
-      - name: Run Turbulence Validation Tests  
+      - name: Run Turbulence Validation Tests
         run: pytest tests/test_turbulence_validation.py --verbose
 
-      - name: Run Video Ground Truth Comparison Tests  
+      - name: Run Video Ground Truth Comparison Tests
         run: pytest tests/test_video_comparison.py --verbose
 
-      # 1️⃣5️⃣ Step: Commit and Push `data/testing-input-output/` Folder
+      # 2️⃣0️⃣ Step: Commit and Push `data/testing-input-output/` Folder
       - name: Commit and Push Simulation Output
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
@@ -120,7 +156,7 @@ jobs:
         run: |
           git config --global user.name "$GIT_USER_NAME"
           git config --global user.email "$GIT_USER_EMAIL"
-          
+
           git add data/testing-input-output/
           git status
           git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added fluid_dynamics_animation.json and video"
