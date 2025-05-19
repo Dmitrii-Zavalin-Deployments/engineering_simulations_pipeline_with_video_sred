@@ -4,9 +4,9 @@ import blender_render  # Importing Blender rendering module
 
 # Define paths
 DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
-LOCAL_INPUT_FOLDER = os.path.join(os.getcwd(), "data/testing-input-output")  # Ensures absolute path
-LOCAL_OUTPUT_FOLDER = os.path.join(os.getcwd(), "RenderedOutput")
-LOG_FILE_PATH = os.path.join(os.getcwd(), "download_log.txt")
+LOCAL_INPUT_FOLDER = os.path.join("..", "data", "testing-input-output")  # Corrected relative path
+LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")             # Corrected relative path
+LOG_FILE_PATH = os.path.join("..", "download_log.txt")                # Corrected relative path
 JSON_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_dynamics_animation.json")
 
 def prepare_files():
@@ -60,9 +60,12 @@ def prepare_files():
 
 if __name__ == "__main__":
     simulation_data = prepare_files()  # ✅ Capture simulation parameters
-    
+
     # Run Blender rendering with JSON-based simulation input
     blender_render.run_blender_render(simulation_data)
 
     print("✅ Rendering process completed! Frames saved in RenderedOutput.")
     print("📽️ Next step: Convert frames to a video in GitHub Actions.")
+
+
+
