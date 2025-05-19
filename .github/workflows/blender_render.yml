@@ -44,11 +44,11 @@ jobs:
           echo "🔍 Listing contents of the src/ directory:"
           ls -lah src/
 
-      # 7️⃣ Step: Debug - List Contents of `src/data/` Directory
-      - name: Debug - List Contents of `src/data/` Directory
+      # 7️⃣ Step: Debug - List Contents of `data/` Directory (Corrected)
+      - name: Debug - List Contents of `data/` Directory (Corrected)
         run: |
-          echo "🔍 Listing contents of the src/data/ directory:"
-          ls -lah src/data/
+          echo "🔍 Listing contents of the data/ directory:"
+          ls -lah data/
 
       # 8️⃣ Step: Ensure `data/testing-input-output/` Directory Exists
       - name: Create `data/testing-input-output/` Directory
