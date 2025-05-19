@@ -3,7 +3,7 @@ import os
 import json
 
 # ✅ Define the directory for simulation data relative to the repository root
-data_dir = os.path.join(os.getcwd(), "data", "testing-input-output")
+data_dir = os.path.join("..", "data", "testing-input-output")
 json_file = os.path.join(data_dir, "fluid_dynamics_animation.json")
 
 # ✅ Ensure `data/testing-input-output/` exists
