@@ -73,14 +73,5 @@ print("✅ Gravity adjusted based on JSON data, water source created, velocity a
 for frame, velocity in enumerate(velocity_field):
     print(f"🔹 Frame {frame}: Applying velocity {velocity}")
 
-# ✅ Save the Updated `.blend` File (If Required)
-blend_output_path = os.path.join(data_dir, "simulation_output.blend")
-
-print(f"🔹 Attempting to save updated simulation scene to: {blend_output_path}")
-bpy.ops.wm.save_mainfile(filepath=blend_output_path)
-
-if os.path.exists(blend_output_path):
-    print(f"✅ Fluid simulation setup complete! Scene saved as '{blend_output_path}'.")
-else:
-    print("❌ ERROR: Failed to save the simulation scene!")
-    exit(1)
+# ✅ Log simulation completion (No `.blend` file required)
+print("✅ Fluid simulation setup complete! Processed using JSON input.")
