@@ -47,7 +47,7 @@ import math
 try:
     bpy.ops.wm.open_mainfile(filepath='{blend_file_path}')
 except Exception as e:
-    print(f'❌ Error opening Blender file: {e}')
+    print(f'❌ Error opening Blender file: {{e}}')
     exit()
 
 # Find the imported model 'MyImportedModel'
