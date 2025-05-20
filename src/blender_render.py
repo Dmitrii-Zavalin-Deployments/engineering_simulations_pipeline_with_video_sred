@@ -1,15 +1,15 @@
 import os
+import json
 
 # Define paths
-LOCAL_FOLDER = "./BlenderInputFiles"
 OUTPUT_FOLDER = "./RenderedOutput"
 
 def run_blender_render(simulation_data):
-    """Executes Blender rendering in CLI mode with optimized settings.
+    """Executes Blender rendering in CLI mode with optimized settings based on simulation data.
 
     Args:
         simulation_data (dict): A dictionary containing the simulation parameters
-                                 loaded from the JSON file.
+                                   loaded from the JSON file.
     """
     print("🔄 Starting rendering process with enhanced settings...")
     print(f"⚙️ Received simulation data for rendering: {simulation_data}")
@@ -17,15 +17,17 @@ def run_blender_render(simulation_data):
     # Ensure output folder exists
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    # Find .blend files
-    blend_files = [f for f in os.listdir(LOCAL_FOLDER) if f.endswith(".blend")]
-
-    if not blend_files:
-        print("⚠️ No .blend files found! Skipping rendering.")
+    # Assuming the .blend file to use is specified in the simulation_data
+    blend_file_name = simulation_data.get("blender_scene_file")
+    if not blend_file_name:
+        print("⚠️ No blender_scene_file specified in the simulation data! Skipping rendering.")
         return  # Gracefully exit
 
-    # Select first .blend file
-    blend_file = os.path.join(LOCAL_FOLDER, blend_files[0])
+    blend_file_path = blend_file_name # Assuming the path is relative to the current working directory or absolute
+
+    if not os.path.exists(blend_file_path):
+        print(f"⚠️ Blender scene file not found at: {blend_file_path}! Skipping rendering.")
+        return
 
     # Extract relevant parameters from simulation_data
     scale_factor = simulation_data.get("scale_factor", 1.5)  # Default to 1.5
@@ -37,12 +39,16 @@ def run_blender_render(simulation_data):
     cycles_samples = simulation_data.get("cycles_samples", 128)
 
     # Run Blender command ensuring correct object selection and optimizations
-    render_command = f"""blender -b "{blend_file}" --python-expr "
+    render_command = f"""blender -b "{blend_file_path}" --python-expr "
 import bpy
 import math
 
 # Load the .blend file
-bpy.ops.wm.open_mainfile(filepath='{blend_file}')
+try:
+    bpy.ops.wm.open_mainfile(filepath='{blend_file_path}')
+except Exception as e:
+    print(f'❌ Error opening Blender file: {e}')
+    exit()
 
 # Find the imported model 'MyImportedModel'
 obj = bpy.data.objects.get('MyImportedModel')
@@ -71,7 +77,7 @@ if obj:
         bpy.ops.render.render(write_still=True)
 
 else:
-    print('❌ Object "MyImportedModel" not found! Skipping rendering.')
+    print('❌ Object "MyImportedModel" not found in the Blender scene! Skipping rendering.')
 " """
 
     os.system(render_command)
@@ -82,6 +88,7 @@ if __name__ == "__main__":
     # Example usage if you were to run this script directly (without main.py)
     # In a real workflow, main.py will call this function with actual data.
     fake_simulation_data = {
+        "blender_scene_file": "example.blend", # Specify the .blend file here
         "scale_factor": 2.0,
         "rotation_z": 90.0,
         "num_frames": 20,
@@ -90,6 +97,10 @@ if __name__ == "__main__":
         "light_location_z": 10,
         "cycles_samples": 256
     }
+    # Create a dummy example.blend file for testing
+    if not os.path.exists("example.blend"):
+        with open("example.blend", "w") as f:
+            f.write("# Dummy Blender file")
     run_blender_render(fake_simulation_data)
 
 
