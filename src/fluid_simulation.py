@@ -6,6 +6,9 @@ import json
 data_dir = os.path.join("data", "testing-input-output")
 json_file = os.path.join(data_dir, "fluid_dynamics_animation.json")
 
+# ✅ Define the output path for the Blender scene file
+blend_output_path = os.path.join(data_dir, "fluid_simulation.blend")
+
 # ✅ Ensure `data/testing-input-output/` exists
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
@@ -73,7 +76,11 @@ print("✅ Gravity adjusted based on JSON data, water source created, velocity a
 for frame, velocity in enumerate(velocity_field):
     print(f"🔹 Frame {frame}: Applying velocity {velocity}")
 
-# ✅ Log simulation completion (No `.blend` file required)
-print("✅ Fluid simulation setup complete! Processed using JSON input.")
+# ✅ Save the Blender scene to a .blend file
+bpy.ops.wm.save_as_mainfile(filepath=blend_output_path)
+print(f"✅ Blender scene saved to: {blend_output_path}")
+
+# ✅ Log simulation completion
+print("✅ Fluid simulation setup complete! Blender scene saved.")
 
 
