@@ -6,9 +6,10 @@ import blender_render  # Importing Blender rendering module
 # Define paths
 DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
 LOCAL_INPUT_FOLDER = os.path.join("..", "data", "testing-input-output")  # Corrected relative path
-LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")                      # Corrected relative path
-LOG_FILE_PATH = os.path.join("..", "download_log.txt")                        # Corrected relative path
+LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")                                         # Corrected relative path
+LOG_FILE_PATH = os.path.join("..", "download_log.txt")                                          # Corrected relative path
 JSON_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_dynamics_animation.json")
+BLENDER_SCENE_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_simulation.blend")  # Define path to the saved .blend file
 
 def prepare_files():
     """Prepares JSON file for rendering and returns simulation parameters."""
@@ -64,7 +65,9 @@ def prepare_files():
     print("✅ Files downloaded successfully! Ready for Blender processing.")
     """
 
-    return simulation_data  # ✅ Return simulation data
+    # Add the blender_scene_file path to the simulation_data dictionary
+    simulation_data["blender_scene_file"] = BLENDER_SCENE_FILE
+    return simulation_data  # ✅ Return updated simulation data
 
 if __name__ == "__main__":
     simulation_data = prepare_files()  # ✅ Capture simulation parameters
