@@ -109,11 +109,9 @@ jobs:
           echo "🔍 Listing contents of src/ to find main.py:"
           ls -lah src/
 
-      # 1️⃣6️⃣ Step: Run Video Rendering from Correct Directory
+      # 1️⃣6️⃣ Step: Run Video Rendering
       - name: Run Video Rendering
-        run: |
-          cd src
-          python3 main.py
+        run: cd src && python3 main.py
 
       # 1️⃣7️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
       - name: Create Video
