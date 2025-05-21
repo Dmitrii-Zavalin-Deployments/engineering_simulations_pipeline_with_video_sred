@@ -9,129 +9,81 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # 1️⃣ Step: Checkout the Repository
+      # ✅ Step: Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Step: Debug - List Repository Contents at Root
-      - name: Debug - List Repository Contents at Root
-        run: |
-          echo "🔍 Listing contents of the repository root:"
-          ls -lah $GITHUB_WORKSPACE/
-
-      # 3️⃣ Step: Install System Dependencies
-      - name: Install System Dependencies
+      # ✅ Step: Install System Dependencies & Blender
+      - name: Install Dependencies & Blender
         run: |
           sudo apt update
           sudo apt install -y python3 python3-pip libegl1 ffmpeg
-
-      # 4️⃣ Step: Install Blender
-      - name: Install Blender
-        run: |
           wget https://download.blender.org/release/Blender4.4/blender-4.4.3-linux-x64.tar.xz
           tar -xvf blender-4.4.3-linux-x64.tar.xz
           mv blender-4.4.3-linux-x64 ~/blender
           sudo ln -s ~/blender/blender /usr/local/bin/blender
 
-      # 5️⃣ Step: Install Python Dependencies (for rendering)
+      # ✅ Step: Install Python Dependencies
       - name: Install Python Dependencies
-        run: |
-          pip install dropbox requests opencv-python numpy jsonschema scikit-image
+        run: pip install dropbox requests opencv-python numpy jsonschema scikit-image
 
-      # 6️⃣ Step: Debug - List Contents of `src/` Directory
-      - name: Debug - List Contents of `src/` Directory
+      # ✅ Step: Debug - List Essential Directories
+      - name: Debug - Verify Key Directories
         run: |
-          echo "🔍 Listing contents of the src/ directory:"
+          echo "🔍 Listing repository root:"
+          ls -lah $GITHUB_WORKSPACE/
+          echo "🔍 Listing contents of src/:"
           ls -lah src/
-
-      # 7️⃣ Step: Debug - List Contents of `data/` Directory (Corrected)
-      - name: Debug - List Contents of `data/` Directory (Corrected)
-        run: |
-          echo "🔍 Listing contents of the data/ directory:"
+          echo "🔍 Listing contents of data/:"
           ls -lah data/
 
-      # 8️⃣ Step: Ensure `data/testing-input-output/` Directory Exists
-      - name: Create `data/testing-input-output/` Directory
+      # ✅ Step: Ensure Required Directories Exist
+      - name: Ensure Required Directories Exist
         run: |
-          mkdir -p data/testing-input-output
+          mkdir -p RenderedOutput data/testing-input-output
+          echo "✅ RenderedOutput and data/testing-input-output created."
 
-      # 9️⃣ Step: Debug - List files in `data/testing-input-output/` Immediately After Creation
-      - name: Debug - List files in `data/testing-input-output/` (After Creation)
+      # ✅ Step: Debug - List Contents of `RenderedOutput/` Before Rendering
+      - name: Debug - List Contents of `RenderedOutput/` Before Rendering
+        run: ls -lah RenderedOutput/
+
+      # ✅ Step: Run Blender Rendering & Verify Output
+      - name: Run Blender Rendering & Verify Output
         run: |
-          echo "🔍 Listing contents of data/testing-input-output/ after creation:"
-          ls -lah data/testing-input-output/
+          cd src && python3 main.py
+          echo "🔍 Checking RenderedOutput/:"
+          ls -lah RenderedOutput/
+          echo "🔍 Checking generated frames:"
+          ls -lah RenderedOutput/ | grep 'frame_' || echo "❌ No frames found!"
 
-      # 🔟 Debug - List Contents of `RenderedOutput/` Before Video Creation
-      - name: Debug - List Contents of `RenderedOutput/` Before Video Creation
-        run: |
-          echo "🔍 Listing contents of RenderedOutput/ BEFORE video creation:"
-          ls -lah ./RenderedOutput/
-
-      # 1️⃣1️⃣ Debug - Verify Frame Files Before FFmpeg Runs
-      - name: Debug - Verify Frame Files
-        run: |
-          for i in {0000..0004}; do
-            FILE=./RenderedOutput/frame_$i.png
-            if [ -f "$FILE" ]; then
-              echo "✅ Frame $FILE exists."
-            else
-              echo "❌ Frame $FILE is missing!"
-            fi
-          done
-
-      # 1️⃣2️⃣ Debug - Check Frame Generation Logs
-      - name: Debug - Check Frame Generation Logs
-        run: |
-          echo "🔍 Checking previous logs for frame generation issues."
-          cat src/main.py | grep 'frame' || echo "❌ No references to frame generation found!"
-
-      # 1️⃣3️⃣ Step: Run Video Rendering
-      - name: Run Video Rendering
-        run: cd src && python3 main.py
-
-      # 1️⃣4️⃣ Debug - Verify `video.mp4` Exists Before Moving
-      - name: Debug - Verify `video.mp4` Exists Before Moving
-        run: |
-          if [ -f ./RenderedOutput/video.mp4 ]; then
-            echo "✅ Video file found. Proceeding to move it."
-          else
-            echo "❌ Video file missing! FFmpeg might have failed."
-          fi
-
-      # 1️⃣5️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
+      # ✅ Step: Create Video from Rendered Frames
       - name: Create Video
         run: |
           chmod +x src/create_video.sh
           ./src/create_video.sh
-          mkdir -p ./data/testing-input-output/ # Ensure the directory exists before moving
           mv ./RenderedOutput/video.mp4 ./data/testing-input-output/video.mp4
 
-      # 1️⃣6️⃣ Debug - List Contents of `data/testing-input-output/` After Video Creation
-      - name: Debug - List Contents of `data/testing-input-output/` After Video Creation
+      # ✅ Step: Debug - Verify Video Output
+      - name: Debug - Verify `video.mp4`
         run: |
-          echo "🔍 Listing contents of data/testing-input-output/ AFTER video creation:"
-          ls -lah data/testing-input-output/
+          if [ -f data/testing-input-output/video.mp4 ]; then
+            echo "✅ Video file generated successfully."
+          else
+            echo "❌ ERROR: No video.mp4 file detected!"
+            exit 1
+          fi
 
-      # 1️⃣7️⃣ Step: Run Unit & Integration Tests for Video Validation
-      - name: Run Unit Tests
-        run: pytest tests/test_input_validation.py --verbose
+      # ✅ Step: Run Unit & Integration Tests
+      - name: Run Tests
+        run: |
+          pytest tests/test_input_validation.py --verbose
+          pytest tests/test_output_validation.py --verbose
+          pytest tests/test_blender_render.py --verbose
+          pytest tests/test_video_analysis.py --verbose
+          pytest tests/test_turbulence_validation.py --verbose
+          pytest tests/test_video_comparison.py --verbose
 
-      - name: Run Output Validation Tests
-        run: pytest tests/test_output_validation.py --verbose
-
-      - name: Run Blender Rendering Tests
-        run: pytest tests/test_blender_render.py --verbose
-
-      - name: Run Fluid Motion Analysis Tests
-        run: pytest tests/test_video_analysis.py --verbose
-
-      - name: Run Turbulence Validation Tests
-        run: pytest tests/test_turbulence_validation.py --verbose
-
-      - name: Run Video Ground Truth Comparison Tests
-        run: pytest tests/test_video_comparison.py --verbose
-
-      # 1️⃣8️⃣ Step: Commit and Push `data/testing-input-output/` Folder
+      # ✅ Step: Commit & Push Output
       - name: Commit and Push Simulation Output
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
@@ -139,7 +91,6 @@ jobs:
         run: |
           git config --global user.name "$GIT_USER_NAME"
           git config --global user.email "$GIT_USER_EMAIL"
-
           git add data/testing-input-output/
           git status
           git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added fluid_dynamics_animation.json and video"
