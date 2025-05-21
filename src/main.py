@@ -6,8 +6,8 @@ import blender_render  # Importing Blender rendering module
 # Define paths
 DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
 LOCAL_INPUT_FOLDER = os.path.join("..", "data", "testing-input-output")  # Corrected relative path
-LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")                                         # Corrected relative path
-LOG_FILE_PATH = os.path.join("..", "download_log.txt")                                          # Corrected relative path
+LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")  # Corrected relative path
+LOG_FILE_PATH = os.path.join("..", "download_log.txt")  # Corrected relative path
 JSON_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_dynamics_animation.json")
 BLENDER_SCENE_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_simulation.blend")  # Define path to the saved .blend file
 
@@ -46,24 +46,12 @@ def prepare_files():
 
     print("✅ Fluid dynamics simulation data loaded successfully!")
 
-    # 🔹 Commented out Dropbox download for now, but kept intact
-    """
-    print("🔄 Starting file download process...")
-
-    REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
-    CLIENT_ID = os.getenv("APP_KEY")
-    CLIENT_SECRET = os.getenv("APP_SECRET")
-
-    if not all([REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET]):
-        print("❌ Error: Missing Dropbox credentials! Ensure secrets are set in GitHub Actions.")
+    # ✅ Verify Blender scene file exists BEFORE running rendering
+    if not os.path.exists(BLENDER_SCENE_FILE):
+        print(f"❌ Error: Blender scene file `{BLENDER_SCENE_FILE}` not found! Rendering aborted.")
         sys.exit(1)
 
-    os.makedirs(LOCAL_INPUT_FOLDER, exist_ok=True)
-
-    download_files_from_dropbox(DROPBOX_INPUT_FOLDER, LOCAL_INPUT_FOLDER, REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET, LOG_FILE_PATH)
-
-    print("✅ Files downloaded successfully! Ready for Blender processing.")
-    """
+    print(f"✅ Blender scene file `{BLENDER_SCENE_FILE}` found. Proceeding with rendering.")
 
     # Add the blender_scene_file path to the simulation_data dictionary
     simulation_data["blender_scene_file"] = BLENDER_SCENE_FILE
@@ -74,6 +62,12 @@ if __name__ == "__main__":
 
     # Run Blender rendering with JSON-based simulation input
     blender_render.run_blender_render(simulation_data)
+
+    # ✅ Verify frames were generated before continuing
+    frame_check = os.system("ls -lah RenderedOutput/ | grep frame_0000.png")
+    if frame_check != 0:
+        print("❌ Error: No frames found in RenderedOutput/. Rendering might have failed.")
+        sys.exit(1)
 
     print("✅ Rendering process completed! Frames saved in RenderedOutput.")
     print("📽️ Next step: Convert frames to a video in GitHub Actions.")
