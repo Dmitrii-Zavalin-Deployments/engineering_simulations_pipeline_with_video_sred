@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 
 # Define paths
 OUTPUT_FOLDER = "./RenderedOutput"
@@ -17,17 +18,14 @@ def run_blender_render(simulation_data):
     # Ensure output folder exists
     os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    # Assuming the .blend file to use is specified in the simulation_data
-    blend_file_name = simulation_data.get("blender_scene_file")
-    if not blend_file_name:
-        print("⚠️ No blender_scene_file specified in the simulation data! Skipping rendering.")
-        return  # Gracefully exit
+    # Verify Blender scene file exists BEFORE rendering
+    blend_file_path = simulation_data.get("blender_scene_file")
+    
+    if not blend_file_path or not os.path.exists(blend_file_path):
+        print(f"❌ Error: Blender scene file '{blend_file_path}' not found! Rendering aborted.")
+        sys.exit(1)
 
-    blend_file_path = blend_file_name # Assuming the path is relative to the current working directory or absolute
-
-    if not os.path.exists(blend_file_path):
-        print(f"⚠️ Blender scene file not found at: {blend_file_path}! Skipping rendering.")
-        return
+    print(f"✅ Blender scene file '{blend_file_path}' found. Proceeding with rendering.")
 
     # Extract relevant parameters from simulation_data
     scale_factor = simulation_data.get("scale_factor", 1.5)  # Default to 1.5
@@ -78,11 +76,19 @@ if obj:
 
 else:
     print('❌ Object "MyImportedModel" not found in the Blender scene! Skipping rendering.')
+    exit()
 " """
 
     os.system(render_command)
 
-    print(f"✅ Rendering process completed! Check frames in {OUTPUT_FOLDER}")
+    # ✅ Verify that frames were successfully generated
+    frame_check = any(os.path.exists(f"{OUTPUT_FOLDER}/frame_{str(i).zfill(4)}.png") for i in range(1, num_frames + 1))
+    
+    if not frame_check:
+        print("❌ Error: No frames found in RenderedOutput/. Rendering might have failed.")
+        sys.exit(1)
+
+    print(f"✅ Rendering process completed! Frames successfully saved in {OUTPUT_FOLDER}")
 
 if __name__ == "__main__":
     # Example usage if you were to run this script directly (without main.py)
@@ -97,10 +103,12 @@ if __name__ == "__main__":
         "light_location_z": 10,
         "cycles_samples": 256
     }
+    
     # Create a dummy example.blend file for testing
     if not os.path.exists("example.blend"):
         with open("example.blend", "w") as f:
             f.write("# Dummy Blender file")
+    
     run_blender_render(fake_simulation_data)
 
 
