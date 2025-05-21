@@ -61,59 +61,44 @@ jobs:
           echo "🔍 Listing contents of data/testing-input-output/ after creation:"
           ls -lah data/testing-input-output/
 
-      # 🔟 Step: Debug - Verify `fluid_dynamics_animation.json` Paths Before Use
-      - name: Debug - Verify `fluid_dynamics_animation.json` Paths Before Use
+      # 🔟 Debug - List Contents of `RenderedOutput/` Before Video Creation
+      - name: Debug - List Contents of `RenderedOutput/` Before Video Creation
         run: |
-          echo "🔍 Checking existence of data/testing-input-output/fluid_dynamics_animation.json BEFORE simulation:"
-          if [ -f data/testing-input-output/fluid_dynamics_animation.json ]; then
-            echo "✅ FOUND: data/testing-input-output/fluid_dynamics_animation.json"
-          else
-            echo "❌ NOT FOUND: data/testing-input-output/fluid_dynamics_animation.json"
-          fi
+          echo "🔍 Listing contents of RenderedOutput/ BEFORE video creation:"
+          ls -lah ./RenderedOutput/
 
-      # 1️⃣1️⃣ Step: Verify `fluid_dynamics_animation.json` exists before simulation
-      - name: Verify `fluid_dynamics_animation.json` exists before simulation
+      # 1️⃣1️⃣ Debug - Verify Frame Files Before FFmpeg Runs
+      - name: Debug - Verify Frame Files
         run: |
-          if [ -f data/testing-input-output/fluid_dynamics_animation.json ]; then
-            echo "✅ `fluid_dynamics_animation.json` detected. Proceeding..."
-          else
-            echo "❌ ERROR: No `fluid_dynamics_animation.json` found in `data/testing-input-output/`!"
-            exit 1
-          fi
+          for i in {0000..0004}; do
+            FILE=./RenderedOutput/frame_$i.png
+            if [ -f "$FILE" ]; then
+              echo "✅ Frame $FILE exists."
+            else
+              echo "❌ Frame $FILE is missing!"
+            fi
+          done
 
-      # 1️⃣2️⃣ Step: Verify Fluid Simulation Script Exists
-      - name: Verify Fluid Simulation Script Exists
+      # 1️⃣2️⃣ Debug - Check Frame Generation Logs
+      - name: Debug - Check Frame Generation Logs
         run: |
-          if [ -f src/fluid_simulation.py ]; then
-            echo "✅ fluid_simulation.py found. Proceeding..."
-          else
-            echo "❌ ERROR: fluid_simulation.py not found!"
-            exit 1
-          fi
+          echo "🔍 Checking previous logs for frame generation issues."
+          cat src/main.py | grep 'frame' || echo "❌ No references to frame generation found!"
 
-      # 1️⃣3️⃣ Step: Set Working Directory and Run Fluid Simulation Inside Blender
-      - name: Run Fluid Simulation Inside Blender
-        run: |
-          cd $GITHUB_WORKSPACE
-          ~/blender/blender -b --python src/fluid_simulation.py
-
-      # 1️⃣4️⃣ Step: Debug - Verify Contents of `data/testing-input-output/` After Simulation
-      - name: Debug - Verify Contents of `data/testing-input-output/` After Simulation
-        run: |
-          echo "🔍 Listing contents of data/testing-input-output/ AFTER simulation:"
-          ls -lah data/testing-input-output/
-
-      # 1️⃣5️⃣ Step: Debug - Verify `main.py` Exists
-      - name: Debug - Verify `main.py` Exists
-        run: |
-          echo "🔍 Listing contents of src/ to find main.py:"
-          ls -lah src/
-
-      # 1️⃣6️⃣ Step: Run Video Rendering
+      # 1️⃣3️⃣ Step: Run Video Rendering
       - name: Run Video Rendering
         run: cd src && python3 main.py
 
-      # 1️⃣7️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
+      # 1️⃣4️⃣ Debug - Verify `video.mp4` Exists Before Moving
+      - name: Debug - Verify `video.mp4` Exists Before Moving
+        run: |
+          if [ -f ./RenderedOutput/video.mp4 ]; then
+            echo "✅ Video file found. Proceeding to move it."
+          else
+            echo "❌ Video file missing! FFmpeg might have failed."
+          fi
+
+      # 1️⃣5️⃣ Step: Create Video from Rendered Frames and Move It to `data/testing-input-output/`
       - name: Create Video
         run: |
           chmod +x src/create_video.sh
@@ -121,13 +106,13 @@ jobs:
           mkdir -p ./data/testing-input-output/ # Ensure the directory exists before moving
           mv ./RenderedOutput/video.mp4 ./data/testing-input-output/video.mp4
 
-      # 1️⃣8️⃣ Step: Debug - List Contents of `data/testing-input-output/` After Video Creation
+      # 1️⃣6️⃣ Debug - List Contents of `data/testing-input-output/` After Video Creation
       - name: Debug - List Contents of `data/testing-input-output/` After Video Creation
         run: |
           echo "🔍 Listing contents of data/testing-input-output/ AFTER video creation:"
           ls -lah data/testing-input-output/
 
-      # 1️⃣9️⃣ Step: Run Unit & Integration Tests for Video Validation
+      # 1️⃣7️⃣ Step: Run Unit & Integration Tests for Video Validation
       - name: Run Unit Tests
         run: pytest tests/test_input_validation.py --verbose
 
@@ -146,7 +131,7 @@ jobs:
       - name: Run Video Ground Truth Comparison Tests
         run: pytest tests/test_video_comparison.py --verbose
 
-      # 2️⃣0️⃣ Step: Commit and Push `data/testing-input-output/` Folder
+      # 1️⃣8️⃣ Step: Commit and Push `data/testing-input-output/` Folder
       - name: Commit and Push Simulation Output
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
@@ -159,3 +144,6 @@ jobs:
           git status
           git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added fluid_dynamics_animation.json and video"
           git push origin HEAD
+
+
+
