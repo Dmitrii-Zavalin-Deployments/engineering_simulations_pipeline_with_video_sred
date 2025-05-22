@@ -3,13 +3,12 @@ import sys
 import json
 import blender_render  # Importing Blender rendering module
 
-# Define paths
-DROPBOX_INPUT_FOLDER = "/simulations/Blender/input"
-LOCAL_INPUT_FOLDER = os.path.join("..", "data", "testing-input-output")  # Corrected relative path
-LOCAL_OUTPUT_FOLDER = os.path.join("..", "RenderedOutput")  # Corrected relative path
-LOG_FILE_PATH = os.path.join("..", "download_log.txt")  # Corrected relative path
+# Retrieve path variables from environment (set by GitHub Actions)
+LOCAL_INPUT_FOLDER = os.getenv("INPUT_FOLDER", os.path.join("..", "data", "testing-input-output"))
+LOCAL_OUTPUT_FOLDER = os.getenv("OUTPUT_FOLDER", os.path.join("..", "RenderedOutput"))
+LOG_FILE_PATH = os.getenv("LOG_FILE", os.path.join("..", "download_log.txt"))
 JSON_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_dynamics_animation.json")
-BLENDER_SCENE_FILE = os.path.join(LOCAL_INPUT_FOLDER, "fluid_simulation.blend")  # Define path to the saved .blend file
+BLENDER_SCENE_FILE = os.getenv("BLEND_FILE", os.path.join(LOCAL_INPUT_FOLDER, "fluid_simulation.blend"))
 
 def prepare_files():
     """Prepares JSON file for rendering and returns simulation parameters."""
@@ -18,8 +17,7 @@ def prepare_files():
 
     # ✅ Debugging: Print expected paths
     print(f"🔍 Expected simulation input directory: {LOCAL_INPUT_FOLDER}")
-    print(f"🔍 Listing files in `{LOCAL_INPUT_FOLDER}`:")
-    os.system(f"ls -lah {LOCAL_INPUT_FOLDER} || echo '⚠️ Directory not found, continuing...'")
+    print(f"🔍 Blender Scene File Path: {BLENDER_SCENE_FILE}")
 
     # ✅ Ensure the correct directory exists
     if not os.path.exists(LOCAL_INPUT_FOLDER):
@@ -71,6 +69,3 @@ if __name__ == "__main__":
 
     print("✅ Rendering process completed! Frames saved in RenderedOutput.")
     print("📽️ Next step: Convert frames to a video in GitHub Actions.")
-
-
-
