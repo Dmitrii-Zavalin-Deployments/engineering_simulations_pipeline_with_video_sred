@@ -13,6 +13,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # ✅ Step: Set Blender Scene File Path in Environment
+      - name: Set Blender File Path
+        run: echo "BLEND_FILE=${{ github.workspace }}/data/testing-input-output/fluid_simulation.blend" >> $GITHUB_ENV
+
       # ✅ Step: Install System Dependencies & Blender
       - name: Install Dependencies & Blender
         run: |
@@ -42,6 +46,18 @@ jobs:
         run: |
           mkdir -p RenderedOutput data/testing-input-output
           echo "✅ RenderedOutput and data/testing-input-output created."
+
+      # ✅ Step: Verify Blender Scene File Presence **Before Execution**
+      - name: Verify Blender Scene File Presence
+        run: ls -lah ${{ env.BLEND_FILE }}
+
+      # ✅ Step: Check Required Files Before Execution
+      - name: Check Required Files Before Execution
+        run: |
+          if [ ! -f "${{ env.BLEND_FILE }}" ]; then
+            echo "❌ Blender scene file missing!"
+            exit 1
+          fi
 
       # ✅ Step: Debug - List Contents of `RenderedOutput/` Before Rendering
       - name: Debug - List Contents of `RenderedOutput/` Before Rendering
@@ -95,6 +111,3 @@ jobs:
           git status
           git diff --cached --quiet && echo "✅ No changes to commit!" || git commit -m "Auto-update: Added fluid_dynamics_animation.json and video"
           git push origin HEAD
-
-
-
