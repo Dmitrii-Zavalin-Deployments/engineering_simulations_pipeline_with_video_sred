@@ -39,11 +39,9 @@ print(f"ParaView: Output Video: {OUTPUT_VIDEO_FILENAME}")
 pv_s.ResetSession()
 
 # Load the PVD file (fluid simulation data)
-# Corrected based on debug output: PVDReader
 fluid_reader = pv_s.PVDReader(FileName=PVD_FILE_PATH)
 
 # Load the turbine 3D model
-# Corrected based on debug output: WavefrontOBJReader and FileName (singular)
 if TURBINE_MODEL_PATH.lower().endswith('.obj'):
     turbine_reader = pv_s.WavefrontOBJReader(FileName=TURBINE_MODEL_PATH)
 elif TURBINE_MODEL_PATH.lower().endswith('.vtp'):
@@ -63,7 +61,7 @@ pv_s.SetActiveView(render_view)
 fluid_display = pv_s.Show(fluid_reader, render_view)
 fluid_display.Representation = 'Volume' # Or 'Outline', 'Surface'
 fluid_display.Opacity = 0.3 # Make it semi-transparent
-# Removed fluid_display.EnableOpacityMapping = 1, as it's not an attribute for this representation type
+# Removed fluid_display.EnableOpacityMapping = 1
 
 # Assuming 'Temperature' is the scalar field you want to visualize in the fluid volume
 # Adjust RGBPoints based on your expected temperature range and desired colors
@@ -88,7 +86,8 @@ print(f"ParaView: Fluid data bounds: {bounds}")
 line_source = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]], # min X, min Y, min Z
                         Point2=[bounds[0], bounds[3], bounds[5]]) # min X, max Y, max Z
 
-streamlines = pv_s.StreamTracer(Input=fluid_reader, SeedSource=line_source)
+# Corrected: Use 'Source' instead of 'SeedSource'
+streamlines = pv_s.StreamTracer(Input=fluid_reader, Source=line_source)
 streamlines.Vectors = ['POINTS', 'Velocity'] # Assuming 'Velocity' is a vector field
 streamlines.IntegrationDirection = 'Both' # Forward, Backward, Both
 streamlines.MaximumPropagation = max(
