@@ -86,9 +86,8 @@ print(f"ParaView: Fluid data bounds: {bounds}")
 line_source = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]], # min X, min Y, min Z
                         Point2=[bounds[0], bounds[3], bounds[5]]) # min X, max Y, max Z
 
-# Corrected: Create StreamTracer first, then set its source
-streamlines = pv_s.StreamTracer(Input=fluid_reader)
-streamlines.SetSource(line_source)
+# Corrected: Use StreamTracerWithCustomSource
+streamlines = pv_s.StreamTracerWithCustomSource(Input=fluid_reader, SeedSource=line_source)
 streamlines.Vectors = ['POINTS', 'Velocity'] # Assuming 'Velocity' is a vector field
 streamlines.IntegrationDirection = 'Both' # Forward, Backward, Both
 streamlines.MaximumPropagation = max(
