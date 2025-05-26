@@ -87,11 +87,15 @@ jobs:
             "$GITHUB_WORKSPACE/src/paraview_visualization.py" \
             --pvd-file "$PVD_FILE" \
             --turbine-model "$TURBINE_MODEL" \
-            --output-video "$OUTPUT_PLACEHOLDER_PATH") # Pass the base path
+            --output-video "$OUTPUT_PLACEHOLDER_PATH")
 
           # Parse output variable for the PNG output directory
           echo "$PYTHON_OUTPUT"
-          echo "$PYTHON_OUTPUT" | grep "PNG_OUTPUT_DIR=" | sed 's/PNG_OUTPUT_DIR=//' >> "$GITHUB_OUTPUT"
+          
+          # --- FIX APPLIED HERE: Use $GITHUB_OUTPUT to set step output ---
+          PNG_OUTPUT_DIR=$(echo "$PYTHON_OUTPUT" | grep "PNG_OUTPUT_DIR=" | sed 's/PNG_OUTPUT_DIR=//')
+          echo "PNG_OUTPUT_DIR=$PNG_OUTPUT_DIR" >> "$GITHUB_OUTPUT" # This sets the step output
+          # --- END FIX ---
 
         env:
           # Set the offscreen rendering environment variables for ParaView
@@ -109,6 +113,7 @@ jobs:
           cd "$GITHUB_WORKSPACE"
 
           # Get the full path to the directory containing the PNGs from the previous step's output
+          # This should now work correctly with the $GITHUB_OUTPUT fix
           PNG_DIR="${{ steps.generate_frames.outputs.PNG_OUTPUT_DIR }}"
 
           echo "Attempting to commit PNG frames from: $PNG_DIR"
