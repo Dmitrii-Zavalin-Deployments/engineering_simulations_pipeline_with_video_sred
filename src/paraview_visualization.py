@@ -85,6 +85,8 @@ print(f"ParaView: Fluid data bounds: {bounds}")
 # This example places a line across the inlet (min X) face
 line_source = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]], # min X, min Y, min Z
                         Point2=[bounds[0], bounds[3], bounds[5]]) # min X, max Y, max Z
+# Corrected: Set Resolution on the line_source itself for number of seed points
+line_source.Resolution = 99 # For 100 points, set Resolution to 99
 
 # Corrected: Use StreamTracerWithCustomSource
 streamlines = pv_s.StreamTracerWithCustomSource(Input=fluid_reader, SeedSource=line_source)
@@ -96,7 +98,6 @@ streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
 max_domain_extent = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
 
 # Adjust number of streamlines and integration parameters for better visualization
-streamlines.NumberOfSourcePoints = 100 # Increase for more streamlines
 streamlines.IntegrationStepUnit = 'Length'
 # Corrected: Use StepLength instead of IntegrationStepLength
 streamlines.StepLength = 0.01 # Adjust based on your domain size for smoother lines
