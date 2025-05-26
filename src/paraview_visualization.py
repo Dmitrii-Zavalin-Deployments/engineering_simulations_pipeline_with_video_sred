@@ -39,11 +39,13 @@ TURBINE_MODEL_PATH = os.path.abspath(TURBINE_MODEL_PATH)
 # For example, if base_output_path is /home/.../data/testing-input-output/turbine_flow_animation.mp4
 # then the output dir for frames will be /home/.../data/testing-input-output/turbine_animation_frames/
 actual_output_dir = os.path.join(os.path.dirname(base_output_path), OUTPUT_FRAMES_SUBDIR)
-PARAVIEW_OUTPUT_PATTERN = os.path.join(actual_output_dir, "frame_%t.png") # %t for timestep
+# --- FIX APPLIED HERE: Changed from %t to %04d ---
+PARAVIEW_OUTPUT_PATTERN = os.path.join(actual_output_dir, "frame_%04d.png") # Use %04d for zero-padded numbers
 
 # Ensure the directory exists for saving frames
 if not os.path.exists(actual_output_dir):
     os.makedirs(actual_output_dir)
+print(f"✅ Ensured output directory exists: {actual_output_dir}") # Added confirmation print
 
 print(f"ParaView: PVD File: {PVD_FILE_PATH}")
 print(f"ParaView: Turbine Model: {TURBINE_MODEL_PATH}")
@@ -142,7 +144,7 @@ print("ParaView: Camera and view set up.")
 
 # --- 6. Save Animation as Image Sequence ---
 print(f"ParaView: Saving animation frames to {PARAVIEW_OUTPUT_PATTERN}...")
-print(f"DEBUG: Argument to SaveAnimation: '{PARAVIEW_OUTPUT_PATTERN}' of type {type(PARAVIEW_OUTPUT_PATTERN)}") # <-- ADDED DEBUG LINE
+print(f"DEBUG: Argument to SaveAnimation: '{PARAVIEW_OUTPUT_PATTERN}' of type {type(PARAVIEW_OUTPUT_PATTERN)}") # Still useful for verbose debugging
 pv_s.SaveAnimation(PARAVIEW_OUTPUT_PATTERN, render_view,
                    ImageQuality=85 # Image quality for PNG (0-100)
                   )
@@ -154,5 +156,3 @@ print("ParaView: Disconnected and script finished.")
 
 # Print out the absolute path to the directory containing the PNGs for the workflow to use
 print(f"PNG_OUTPUT_DIR={actual_output_dir}")
-
-
