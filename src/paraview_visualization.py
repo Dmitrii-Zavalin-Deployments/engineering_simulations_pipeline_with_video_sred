@@ -61,7 +61,6 @@ pv_s.SetActiveView(render_view)
 fluid_display = pv_s.Show(fluid_reader, render_view)
 fluid_display.Representation = 'Volume' # Or 'Outline', 'Surface'
 fluid_display.Opacity = 0.3 # Make it semi-transparent
-# Removed fluid_display.EnableOpacityMapping = 1 (not needed/relevant for simple volume rendering)
 
 # Assuming 'Temperature' is the scalar field you want to visualize in the fluid volume
 # Adjust RGBPoints based on your expected temperature range and desired colors
@@ -93,7 +92,6 @@ streamlines = pv_s.StreamTracerWithCustomSource(Input=fluid_reader, SeedSource=l
 streamlines.Vectors = ['POINTS', 'Velocity'] # Assuming 'Velocity' is a vector field
 streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
 
-# Removed the diagnostic print block as we now have the property names.
 # Adjust streamline integration parameters for better visualization
 streamlines.IntegrationStepUnit = 'Length'
 
@@ -126,15 +124,16 @@ print("ParaView: Displaying turbine model.")
 # --- 4. Setup Animation ---
 animation_scene = pv_s.GetAnimationScene()
 animation_scene.PlayMode = 'Snap To TimeSteps' # Important for PVD files
-# animation_scene.UpdateAnimationSteps() # REMOVED: This attribute does not exist in PV 5.11.2 for vtkSMAnimationScene
 
 # The animation scene's time steps are automatically updated when the PVDReader loads data.
 # We simply need to set the scene's start/end times based on the reader's available timesteps.
 animation_scene.StartTime = fluid_reader.TimestepValues[0]
 animation_scene.EndTime = fluid_reader.TimestepValues[-1]
 animation_scene.NumberOfFrames = len(fluid_reader.TimestepValues)
-animation_scene.FPS = 10 # Frames per second for the output video. Adjust as desired.
-print(f"ParaView: Animation setup complete. Frames: {animation_scene.NumberOfFrames}, FPS: {animation_scene.FPS}")
+# animation_scene.FPS = 10 # REMOVED: This attribute does not exist for AnimationScene in PV 5.11.2.
+# FPS is controlled directly in SaveAnimation.
+desired_fps = 10 # Define desired FPS here, will be passed to SaveAnimation
+print(f"ParaView: Animation setup complete. Frames: {animation_scene.NumberOfFrames}, Desired FPS: {desired_fps}")
 
 # --- 5. Camera Setup ---
 # Calculate the center of the fluid domain for focal point
@@ -165,7 +164,7 @@ if output_dir and not os.path.exists(output_dir):
 # Save animation
 print(f"ParaView: Saving animation to {OUTPUT_VIDEO_FILENAME}...")
 pv_s.SaveAnimation(OUTPUT_VIDEO_FILENAME, render_view,
-                   FrameRate=int(animation_scene.FPS),
+                   FrameRate=int(desired_fps), # Use the desired_fps variable here
                    SuffixAndExtension=False, # Save as single video file
                    Quality=2 # Good quality (0-2)
                   )
