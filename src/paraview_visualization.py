@@ -130,8 +130,6 @@ animation_scene.PlayMode = 'Snap To TimeSteps' # Important for PVD files
 animation_scene.StartTime = fluid_reader.TimestepValues[0]
 animation_scene.EndTime = fluid_reader.TimestepValues[-1]
 animation_scene.NumberOfFrames = len(fluid_reader.TimestepValues)
-# animation_scene.FPS = 10 # REMOVED: This attribute does not exist for AnimationScene in PV 5.11.2.
-# FPS is controlled directly in SaveAnimation.
 desired_fps = 10 # Define desired FPS here, will be passed to SaveAnimation
 print(f"ParaView: Animation setup complete. Frames: {animation_scene.NumberOfFrames}, Desired FPS: {desired_fps}")
 
@@ -164,8 +162,8 @@ if output_dir and not os.path.exists(output_dir):
 # Save animation
 print(f"ParaView: Saving animation to {OUTPUT_VIDEO_FILENAME}...")
 pv_s.SaveAnimation(OUTPUT_VIDEO_FILENAME, render_view,
-                   FrameRate=int(desired_fps), # Use the desired_fps variable here
-                   SuffixAndExtension=False, # Save as single video file
+                   FrameRate=int(desired_fps),
+                   # SuffixAndExtension=False, # REMOVED: This attribute does not exist in PV 5.11.2 for SaveAnimation
                    Quality=2 # Good quality (0-2)
                   )
 print(f"ParaView: Animation saved to {OUTPUT_VIDEO_FILENAME}")
