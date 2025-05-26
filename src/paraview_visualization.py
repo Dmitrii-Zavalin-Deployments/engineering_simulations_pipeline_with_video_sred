@@ -91,15 +91,20 @@ streamlines = pv_s.StreamTracerWithCustomSource(Input=fluid_reader, SeedSource=l
 streamlines.Vectors = ['POINTS', 'Velocity'] # Assuming 'Velocity' is a vector field
 streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
 
-# Corrected: Use IntegrationLength instead of MaximumPropagation
-streamlines.IntegrationLength = max(
-    bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4]
-) * 1.5 # Propagate across domain, maybe a bit more
+# Corrected: Use MaximumNumberOfSteps instead of MaximumPropagation or IntegrationLength
+# Calculate a rough estimate for steps based on the maximum domain extent
+max_domain_extent = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
+# Assuming IntegrationStepLength is set to 0.01, trace for roughly 1.5 times the domain extent
+# You might need to adjust the 1.5 multiplier or IntegrationStepLength based on your data scale
+streamlines.IntegrationStepUnit = 'Length'
+streamlines.IntegrationStepLength = 0.01 # Adjust based on your domain size for smoother lines
+streamlines.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.IntegrationStepLength)
+print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.MaximumNumberOfSteps}")
+
 
 # Adjust number of streamlines and integration parameters for better visualization
 streamlines.NumberOfSourcePoints = 100 # Increase for more streamlines
-streamlines.IntegrationStepUnit = 'Length'
-streamlines.IntegrationStepLength = 0.01 # Adjust based on your domain size for smoother lines
+
 
 streamlines_display = pv_s.Show(streamlines, render_view)
 streamlines_display.Representation = 'Surface'
