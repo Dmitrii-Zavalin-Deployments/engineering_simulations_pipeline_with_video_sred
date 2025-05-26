@@ -162,9 +162,8 @@ if output_dir and not os.path.exists(output_dir):
 # Save animation
 print(f"ParaView: Saving animation to {OUTPUT_VIDEO_FILENAME}...")
 pv_s.SaveAnimation(OUTPUT_VIDEO_FILENAME, render_view,
-                   FrameRate=int(desired_fps),
-                   # SuffixAndExtension=False, # REMOVED: This attribute does not exist in PV 5.11.2 for SaveAnimation
-                   Quality=2 # Good quality (0-2)
+                   FrameRate=int(desired_fps)
+                   # Quality=2 # REMOVED: This attribute does not exist in PV 5.11.2 for SaveAnimation
                   )
 print(f"ParaView: Animation saved to {OUTPUT_VIDEO_FILENAME}")
 
