@@ -90,7 +90,9 @@ line_source = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]], # min X, min Y
 streamlines = pv_s.StreamTracerWithCustomSource(Input=fluid_reader, SeedSource=line_source)
 streamlines.Vectors = ['POINTS', 'Velocity'] # Assuming 'Velocity' is a vector field
 streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
-streamlines.MaximumPropagation = max(
+
+# Corrected: Use IntegrationLength instead of MaximumPropagation
+streamlines.IntegrationLength = max(
     bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4]
 ) * 1.5 # Propagate across domain, maybe a bit more
 
