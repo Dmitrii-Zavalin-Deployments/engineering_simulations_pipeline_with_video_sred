@@ -94,16 +94,14 @@ streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
 # Corrected: Use MaximumNumberOfSteps instead of MaximumPropagation or IntegrationLength
 # Calculate a rough estimate for steps based on the maximum domain extent
 max_domain_extent = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
-# Assuming IntegrationStepLength is set to 0.01, trace for roughly 1.5 times the domain extent
-# You might need to adjust the 1.5 multiplier or IntegrationStepLength based on your data scale
-streamlines.IntegrationStepUnit = 'Length'
-streamlines.IntegrationStepLength = 0.01 # Adjust based on your domain size for smoother lines
-streamlines.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.IntegrationStepLength)
-print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.MaximumNumberOfSteps}")
-
 
 # Adjust number of streamlines and integration parameters for better visualization
 streamlines.NumberOfSourcePoints = 100 # Increase for more streamlines
+streamlines.IntegrationStepUnit = 'Length'
+# Corrected: Use StepLength instead of IntegrationStepLength
+streamlines.StepLength = 0.01 # Adjust based on your domain size for smoother lines
+streamlines.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.StepLength)
+print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.MaximumNumberOfSteps}")
 
 
 streamlines_display = pv_s.Show(streamlines, render_view)
