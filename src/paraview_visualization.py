@@ -6,9 +6,15 @@ import sys
 import os
 
 # --- Configuration (can be passed as command line arguments or hardcoded) ---
-OUTPUT_VIDEO_FILENAME = "turbine_flow_animation.mp4"
+# We will now output an image sequence, and ffmpeg will convert it later
+OUTPUT_IMAGE_DIR = "temp_frames"
+OUTPUT_IMAGE_FILENAME_PATTERN = os.path.join(OUTPUT_IMAGE_DIR, "frame_") # ParaView will add %t.png
+FINAL_OUTPUT_VIDEO_FILENAME = "turbine_flow_animation.mp4" # This is the final name for the ffmpeg output
+
 PVD_FILE_PATH = None  # To be set by argument
 TURBINE_MODEL_PATH = None # Path to your .stl, .obj, or .vtp turbine model
+# We will pass the FINAL_OUTPUT_VIDEO_FILENAME as --output-video argument to the script
+# so we still know the final intended name in the workflow.
 
 # Parse command line arguments if running from command line
 if __name__ == "__main__":
@@ -19,20 +25,33 @@ if __name__ == "__main__":
         elif arg == "--turbine-model" and i + 1 < len(args):
             TURBINE_MODEL_PATH = args[i+1]
         elif arg == "--output-video" and i + 1 < len(args):
-            OUTPUT_VIDEO_FILENAME = args[i+1]
+            # This is the final video name, not the intermediate image sequence.
+            # We'll use this path to inform the user.
+            FINAL_OUTPUT_VIDEO_FILENAME = args[i+1]
+
 
 if not PVD_FILE_PATH or not TURBINE_MODEL_PATH:
     print("Usage: pvpython paraview_visualization.py --pvd-file <path_to_pvd> --turbine-model <path_to_stl/obj/vtp> [--output-video <filename>]")
     sys.exit(1)
 
 # Ensure paths are absolute or correctly relative to where pvpython is run
-# In GitHub Actions, these will typically already be absolute due to the workflow's handling
 PVD_FILE_PATH = os.path.abspath(PVD_FILE_PATH)
 TURBINE_MODEL_PATH = os.path.abspath(TURBINE_MODEL_PATH)
 
+# Determine the absolute path for the temporary image directory
+# It's good practice to place this where the workflow can easily find/clean it
+temp_image_output_path = os.path.join(os.path.dirname(FINAL_OUTPUT_VIDEO_FILENAME), OUTPUT_IMAGE_DIR)
+# Ensure the directory exists for saving frames
+if not os.path.exists(temp_image_output_path):
+    os.makedirs(temp_image_output_path)
+# Construct the full path and pattern for ParaView's SaveAnimation
+PARAVIEW_OUTPUT_PATTERN = os.path.join(temp_image_output_path, "frame_%t.png") # %t for timestep
+
 print(f"ParaView: PVD File: {PVD_FILE_PATH}")
 print(f"ParaView: Turbine Model: {TURBINE_MODEL_PATH}")
-print(f"ParaView: Output Video: {OUTPUT_VIDEO_FILENAME}")
+print(f"ParaView: Output Image Sequence to: {temp_image_output_path}")
+print(f"ParaView: Final Output Video Name: {FINAL_OUTPUT_VIDEO_FILENAME}")
+
 
 # --- 1. Load Data ---
 # Clear existing pipeline
@@ -130,7 +149,7 @@ animation_scene.PlayMode = 'Snap To TimeSteps' # Important for PVD files
 animation_scene.StartTime = fluid_reader.TimestepValues[0]
 animation_scene.EndTime = fluid_reader.TimestepValues[-1]
 animation_scene.NumberOfFrames = len(fluid_reader.TimestepValues)
-desired_fps = 10 # Define desired FPS here, will be passed to SaveAnimation
+desired_fps = 10 # Define desired FPS here, will be passed to ffmpeg later
 print(f"ParaView: Animation setup complete. Frames: {animation_scene.NumberOfFrames}, Desired FPS: {desired_fps}")
 
 # --- 5. Camera Setup ---
@@ -153,20 +172,19 @@ render_view.ViewSize = [1920, 1080] # High resolution for better video quality
 pv_s.Render()
 print("ParaView: Camera and view set up.")
 
-# --- 6. Save Animation ---
-# Ensure a temporary directory for output if needed
-output_dir = os.path.dirname(OUTPUT_VIDEO_FILENAME)
-if output_dir and not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-# Save animation
-print(f"ParaView: Saving animation to {OUTPUT_VIDEO_FILENAME}...")
-pv_s.SaveAnimation(OUTPUT_VIDEO_FILENAME, render_view,
-                   FrameRate=int(desired_fps)
-                   # Quality=2 # REMOVED: This attribute does not exist in PV 5.11.2 for SaveAnimation
+# --- 6. Save Animation as Image Sequence ---
+print(f"ParaView: Saving animation frames to {PARAVIEW_OUTPUT_PATTERN}...")
+pv_s.SaveAnimation(PARAVIEW_OUTPUT_PATTERN, render_view,
+                   ImageQuality=85 # Image quality for PNG (0-100)
+                   # FrameRate is not used here, as we save individual frames
                   )
-print(f"ParaView: Animation saved to {OUTPUT_VIDEO_FILENAME}")
+print(f"ParaView: Animation frames saved to {PARAVIEW_OUTPUT_PATTERN}")
 
 # Cleanup
 pv_s.Disconnect()
 print("ParaView: Disconnected and script finished.")
+
+# Print out the temp image directory and final video name for the workflow to use
+print(f"FFMPEG_INPUT_DIR={temp_image_output_path}")
+print(f"FFMPEG_OUTPUT_FILE={FINAL_OUTPUT_VIDEO_FILENAME}")
+print(f"FFMPEG_FPS={desired_fps}")
