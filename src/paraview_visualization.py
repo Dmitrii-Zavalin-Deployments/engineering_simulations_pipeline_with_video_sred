@@ -95,13 +95,13 @@ streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
 
 # Adjust number of streamlines and integration parameters for better visualization
 streamlines.IntegrationStepUnit = 'Length'
-# Corrected: Access the Integrator sub-object to set its properties
-streamlines.Integrator.StepLength = 0.01 # Adjust based on your domain size for smoother lines
+# Corrected: Use InitialStepLength directly on streamlines
+streamlines.InitialStepLength = 0.01 # Adjust based on your domain size for smoother lines
 
-# Corrected: Set MaximumNumberOfSteps on the Integrator
+# Corrected: Set MaximumNumberOfSteps directly on streamlines
 max_domain_extent = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
-streamlines.Integrator.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.Integrator.StepLength)
-print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.Integrator.MaximumNumberOfSteps}")
+streamlines.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.InitialStepLength)
+print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.MaximumNumberOfSteps}")
 
 
 streamlines_display = pv_s.Show(streamlines, render_view)
