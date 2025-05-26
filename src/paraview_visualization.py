@@ -40,17 +40,16 @@ pv_s.ResetSession()
 
 # Load the PVD file (fluid simulation data)
 # Corrected based on debug output: PVDReader
-# Note: PVDReader also uses FileName (singular) for a single PVD file, not FileNames
-fluid_reader = pv_s.PVDReader(FileName=PVD_FILE_PATH) # Changed to singular and no list
+fluid_reader = pv_s.PVDReader(FileName=PVD_FILE_PATH)
 
 # Load the turbine 3D model
 # Corrected based on debug output: WavefrontOBJReader and FileName (singular)
 if TURBINE_MODEL_PATH.lower().endswith('.obj'):
-    turbine_reader = pv_s.WavefrontOBJReader(FileName=TURBINE_MODEL_PATH) # Changed to singular and no list
+    turbine_reader = pv_s.WavefrontOBJReader(FileName=TURBINE_MODEL_PATH)
 elif TURBINE_MODEL_PATH.lower().endswith('.vtp'):
-    turbine_reader = pv_s.XMLPolyDataReader(FileName=TURBINE_MODEL_PATH) # Changed to singular and no list
+    turbine_reader = pv_s.XMLPolyDataReader(FileName=TURBINE_MODEL_PATH)
 elif TURBINE_MODEL_PATH.lower().endswith('.stl'):
-    turbine_reader = pv_s.STLReader(FileName=TURBINE_MODEL_PATH) # Changed to singular and no list
+    turbine_reader = pv_s.STLReader(FileName=TURBINE_MODEL_PATH)
 else:
     print(f"Error: Unsupported turbine model format: {os.path.splitext(TURBINE_MODEL_PATH)[1]}. Supported: .obj, .vtp, .stl")
     sys.exit(1)
@@ -64,7 +63,8 @@ pv_s.SetActiveView(render_view)
 fluid_display = pv_s.Show(fluid_reader, render_view)
 fluid_display.Representation = 'Volume' # Or 'Outline', 'Surface'
 fluid_display.Opacity = 0.3 # Make it semi-transparent
-fluid_display.EnableOpacityMapping = 1
+# Removed fluid_display.EnableOpacityMapping = 1, as it's not an attribute for this representation type
+
 # Assuming 'Temperature' is the scalar field you want to visualize in the fluid volume
 # Adjust RGBPoints based on your expected temperature range and desired colors
 fluid_display.LookupTable = pv_s.GetLookupTableForArray('Temperature', 1,
