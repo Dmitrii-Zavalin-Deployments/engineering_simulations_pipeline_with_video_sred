@@ -98,10 +98,10 @@ streamlines.IntegrationStepUnit = 'Length'
 # Corrected: Use InitialStepLength directly on streamlines
 streamlines.InitialStepLength = 0.01 # Adjust based on your domain size for smoother lines
 
-# Corrected: Set MaximumNumberOfSteps directly on streamlines
+# Corrected: Use MaxSteps directly on streamlines
 max_domain_extent = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
-streamlines.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.InitialStepLength)
-print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.MaximumNumberOfSteps}")
+streamlines.MaxSteps = int(max_domain_extent * 1.5 / streamlines.InitialStepLength)
+print(f"ParaView: Streamline MaxSteps set to {streamlines.MaxSteps}")
 
 
 streamlines_display = pv_s.Show(streamlines, render_view)
