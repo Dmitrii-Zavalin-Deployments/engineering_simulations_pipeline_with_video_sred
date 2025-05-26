@@ -142,6 +142,7 @@ print("ParaView: Camera and view set up.")
 
 # --- 6. Save Animation as Image Sequence ---
 print(f"ParaView: Saving animation frames to {PARAVIEW_OUTPUT_PATTERN}...")
+print(f"DEBUG: Argument to SaveAnimation: '{PARAVIEW_OUTPUT_PATTERN}' of type {type(PARAVIEW_OUTPUT_PATTERN)}") # <-- ADDED DEBUG LINE
 pv_s.SaveAnimation(PARAVIEW_OUTPUT_PATTERN, render_view,
                    ImageQuality=85 # Image quality for PNG (0-100)
                   )
@@ -153,3 +154,5 @@ print("ParaView: Disconnected and script finished.")
 
 # Print out the absolute path to the directory containing the PNGs for the workflow to use
 print(f"PNG_OUTPUT_DIR={actual_output_dir}")
+
+
