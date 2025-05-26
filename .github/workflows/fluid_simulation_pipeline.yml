@@ -64,15 +64,16 @@ jobs:
             exit 1
           fi
 
-      - name: Install Xvfb and FFmpeg
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb ffmpeg
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
 
       - name: Run ParaView Python script to generate image sequence with Xvfb
         id: generate_frames # Give this step an ID to access its outputs
         run: |
-          OUTPUT_VIDEO_PATH="$GITHUB_WORKSPACE/data/testing-input-output/turbine_flow_animation.mp4"
+          # The --output-video argument is used by the Python script to derive the base output directory for the frames.
+          # The actual filename (e.g., turbine_flow_animation.mp4) isn't used by the Python script itself for output anymore,
+          # but the path part (data/testing-input-output/) is.
+          OUTPUT_PLACEHOLDER_PATH="$GITHUB_WORKSPACE/data/testing-input-output/turbine_flow_animation.mp4" 
           PVD_FILE="$GITHUB_WORKSPACE/data/testing-input-output/vtk_output/turbine_flow_animation.pvd"
           TURBINE_MODEL="$GITHUB_WORKSPACE/data/testing-input-output/3d_model.obj"
           
@@ -81,59 +82,23 @@ jobs:
           export DISPLAY=:99
           
           # Run pvpython with environment variables for offscreen rendering
-          # Capture the output variables for ffmpeg
+          # Capture the output variables for the PNG output directory
           PYTHON_OUTPUT=$(/opt/ParaView-5.11.2-MPI-Linux-Python3.9-x86_64/bin/pvpython \
             "$GITHUB_WORKSPACE/src/paraview_visualization.py" \
             --pvd-file "$PVD_FILE" \
             --turbine-model "$TURBINE_MODEL" \
-            --output-video "$OUTPUT_VIDEO_PATH")
+            --output-video "$OUTPUT_PLACEHOLDER_PATH") # Pass the base path
 
-          # Parse output variables for subsequent steps
+          # Parse output variable for the PNG output directory
           echo "$PYTHON_OUTPUT"
-          echo "$PYTHON_OUTPUT" | grep "FFMPEG_INPUT_DIR=" | sed 's/FFMPEG_INPUT_DIR=//' >> "$GITHUB_OUTPUT"
-          echo "$PYTHON_OUTPUT" | grep "FFMPEG_OUTPUT_FILE=" | sed 's/FFMPEG_OUTPUT_FILE=//' >> "$GITHUB_OUTPUT"
-          echo "$PYTHON_OUTPUT" | grep "FFMPEG_FPS=" | sed 's/FFMPEG_FPS=//' >> "$GITHUB_OUTPUT"
+          echo "$PYTHON_OUTPUT" | grep "PNG_OUTPUT_DIR=" | sed 's/PNG_OUTPUT_DIR=//' >> "$GITHUB_OUTPUT"
 
         env:
           # Set the offscreen rendering environment variables for ParaView
           PV_ENABLE_OSMESA: 1 # Essential for headless rendering
           PV_OFFSCREEN_HEADLESS: 1 # Also useful for headless environments
-
-      - name: Convert Image Sequence to Video with FFmpeg
-        run: |
-          INPUT_DIR="${{ steps.generate_frames.outputs.FFMPEG_INPUT_DIR }}"
-          OUTPUT_FILE="${{ steps.generate_frames.outputs.FFMPEG_OUTPUT_FILE }}"
-          FPS="${{ steps.generate_frames.outputs.FFMPEG_FPS }}"
-
-          echo "FFmpeg: Converting images from $INPUT_DIR to video $OUTPUT_FILE at $FPS FPS"
-          
-          # Ensure the output directory for the final video exists
-          mkdir -p "$(dirname "$OUTPUT_FILE")"
-
-          # Use FFmpeg to create the video
-          # -framerate: Input frame rate
-          # -i: Input pattern (e.g., frame_%04d.png) - ParaView typically uses 4 digits for frame number
-          # -c:v libx264: Use H.264 video codec
-          # -preset medium: Encoding speed vs. compression efficiency (medium is a good balance)
-          # -crf 23: Constant Rate Factor for quality (lower is better quality, 23 is good default)
-          # -pix_fmt yuv420p: Pixel format for broad compatibility (especially with QuickTime)
-          ffmpeg -framerate "$FPS" -i "$INPUT_DIR/frame_%d.png" \
-                 -c:v libx264 -preset medium -crf 23 -pix_fmt yuv420p \
-                 "$OUTPUT_FILE"
-          
-          echo "FFmpeg: Video conversion complete."
-          ls -l "$OUTPUT_FILE" # List the generated video file to confirm size
-
-      - name: Clean up temporary image directory
-        # Optional: Removes the intermediate frames to save space
-        run: |
-          INPUT_DIR="${{ steps.generate_frames.outputs.FFMPEG_INPUT_DIR }}"
-          if [ -d "$INPUT_DIR" ]; then
-            echo "Cleaning up temporary image directory: $INPUT_DIR"
-            rm -rf "$INPUT_DIR"
-          fi
-          
-      - name: Commit and Push Generated Video to Repository
+      
+      - name: Commit and Push Generated PNG Frames to Repository
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
@@ -143,17 +108,22 @@ jobs:
 
           cd "$GITHUB_WORKSPACE"
 
-          VIDEO_FILE="data/testing-input-output/turbine_flow_animation.mp4" # Use the final video path
+          # Get the full path to the directory containing the PNGs from the previous step's output
+          PNG_DIR="${{ steps.generate_frames.outputs.PNG_OUTPUT_DIR }}"
 
-          if [ -f "${VIDEO_FILE}" ]; then
-            git add "${VIDEO_FILE}"
+          echo "Attempting to commit PNG frames from: $PNG_DIR"
+          
+          # Check if the directory exists and contains any files
+          if [ -d "${PNG_DIR}" ] && [ -n "$(ls -A "${PNG_DIR}")" ]; then
+            git add "${PNG_DIR}" # Add the entire directory
             git status
+            # Check if there are actual changes staged for commit
             if [[ $(git diff --cached --quiet; echo $?) -ne 0 ]]; then
-              git commit -m "Auto-update: Generated CFD visualization video"
+              git commit -m "Auto-update: Generated CFD visualization PNG frames"
               git push origin HEAD
             else
-              echo "✅ No changes to video file to commit!"
+              echo "✅ No new or changed PNG frames to commit!"
             fi
           else
-            echo "❌ No video file detected at ${VIDEO_FILE}, skipping commit."
+            echo "❌ No PNG frames found in ${PNG_DIR}, skipping commit."
           fi
