@@ -39,7 +39,8 @@ print(f"ParaView: Output Video: {OUTPUT_VIDEO_FILENAME}")
 pv_s.ResetSession()
 
 # Load the PVD file (your fluid simulation data)
-fluid_reader = pv_s.OpenData(PVD_FILE_PATH)
+# FIX: Use XMLPVDReader for .pvd files
+fluid_reader = pv_s.XMLPVDReader(FileName=[PVD_FILE_PATH])
 
 # Load the turbine 3D model
 # Based on your repository structure, you have '3d_model.obj' in 'data/testing-input-output/'
