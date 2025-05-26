@@ -44,7 +44,7 @@ jobs:
           
           echo "/opt/${PV_DIR}/bin" >> $GITHUB_PATH
           echo "ParaView's pvpython should now be in PATH."
-      
+    
       - name: Debug ParaView Python Environment
         # Verify the debug script exists before running
         run: |
@@ -64,14 +64,29 @@ jobs:
             exit 1
           fi
 
-      - name: Run ParaView Python script to generate video
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Run ParaView Python script to generate video with Xvfb
         run: |
           OUTPUT_VIDEO_PATH="$GITHUB_WORKSPACE/data/testing-input-output/turbine_flow_animation.mp4"
+          PVD_FILE="$GITHUB_WORKSPACE/data/testing-input-output/vtk_output/turbine_flow_animation.pvd"
+          TURBINE_MODEL="$GITHUB_WORKSPACE/data/testing-input-output/3d_model.obj"
           
-          pvpython "$GITHUB_WORKSPACE/src/paraview_visualization.py" \
-            --pvd-file "$GITHUB_WORKSPACE/data/testing-input-output/vtk_output/turbine_flow_animation.pvd" \
-            --turbine-model "$GITHUB_WORKSPACE/data/testing-input-output/3d_model.obj" \
+          # Start Xvfb on a display number (e.g., :99)
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+          
+          # Run pvpython with environment variables for offscreen rendering
+          /opt/ParaView-5.11.2-MPI-Linux-Python3.9-x86_64/bin/pvpython \
+            "$GITHUB_WORKSPACE/src/paraview_visualization.py" \
+            --pvd-file "$PVD_FILE" \
+            --turbine-model "$TURBINE_MODEL" \
             --output-video "$OUTPUT_VIDEO_PATH"
+        env:
+          # Set the offscreen rendering environment variables for ParaView
+          PV_ENABLE_OSMESA: 1 # Essential for headless rendering
+          PV_OFFSCREEN_HEADLESS: 1 # Also useful for headless environments
 
       - name: Commit and Push Generated Video to Repository
         env:
