@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<VTKFile type="ImageData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
+  <ImageData WholeExtent="0 5 0 7 0 12" Origin="0 0 0" Spacing="20 1.4285714285714313 8.313906409921161" Direction="1 0 0 0 1 0 0 0 1">
+  <Piece Extent="0 5 0 7 0 12">
+    <PointData Scalars="Density">
+      <DataArray type="Float32" Name="Density" format="binary" RangeMin="1.225000023841858" RangeMax="1.225000023841858">
+        AQAAAACAAADACQAAHgAAAA==eJw7e2aO/dlRPIpH8SgexaN4FI/iUTxkMABmc/sM
+      </DataArray>
+      <DataArray type="Float32" Name="Temperature" format="binary" RangeMin="288.2030944824219" RangeMax="288.2030944824219">
+        AQAAAACAAADACQAAHgAAAA==eJz7LznB+f8oHsWjeBSP4lE8ikfxKB4yGABKsK0N
+      </DataArray>
+      <DataArray type="Float32" Name="Velocity" NumberOfComponents="3" format="binary" RangeMin="1" RangeMax="1">
+        AQAAAACAAABAHQAAKgAAAA==eJztxjEBAAAIA6A1s5rR91lCuEh2ctzd3d3d3d3d3d3d3d3d/74zX9Gg
+        <InformationKey name="L2_NORM_RANGE" location="vtkDataArray" length="2">
+          <Value index="0">
+            1
+          </Value>
+          <Value index="1">
+            1
+          </Value>
+        </InformationKey>
+      </DataArray>
+    </PointData>
+    <CellData>
+    </CellData>
+  </Piece>
+  </ImageData>
+</VTKFile>
