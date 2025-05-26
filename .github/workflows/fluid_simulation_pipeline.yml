@@ -47,14 +47,14 @@ jobs:
       
       - name: Debug ParaView Python Environment
         # This crucial step checks what's actually available in paraview.simple
-        run: | # The '|' indicates a multi-line literal string.
+        run: |
           echo "Verifying pvpython path:"
           which pvpython
           echo ""
 
           echo "Listing contents of paraview.simple module:"
-          pvpython -c "
-import paraview.simple as ps
+          # Define the Python script content as a multi-line string in the shell
+          PYTHON_SCRIPT="import paraview.simple as ps
 import sys
 try:
     print(f'ParaView version (if available): {ps.ParaViewVersion()}')
@@ -66,6 +66,9 @@ for attr in sorted(dir(ps)):
     if not attr.startswith('__'): # Filter out internal attributes
         print(attr)
 print('------------------------------------')"
+          
+          # Pass the script content to pvpython -c
+          pvpython -c "${PYTHON_SCRIPT}"
           echo "Debugging ParaView environment complete."
 
       - name: Verify paraview_visualization.py Script Exists
@@ -73,8 +76,8 @@ print('------------------------------------')"
           if [ ! -f "$GITHUB_WORKSPACE/src/paraview_visualization.py" ]; then
             echo "❌ Error: paraview_visualization.py not found in src directory! Please ensure it's there."
             exit 1
-          fi
-
+          Ffi
+          
       - name: Run ParaView Python script to generate video
         run: |
           OUTPUT_VIDEO_PATH="$GITHUB_WORKSPACE/data/testing-input-output/turbine_flow_animation.mp4"
