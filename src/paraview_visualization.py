@@ -40,16 +40,17 @@ pv_s.ResetSession()
 
 # Load the PVD file (fluid simulation data)
 # Corrected based on debug output: PVDReader
-fluid_reader = pv_s.PVDReader(FileName=[PVD_FILE_PATH])
+# Note: PVDReader also uses FileName (singular) for a single PVD file, not FileNames
+fluid_reader = pv_s.PVDReader(FileName=PVD_FILE_PATH) # Changed to singular and no list
 
 # Load the turbine 3D model
-# Corrected based on debug output: WavefrontOBJReader
+# Corrected based on debug output: WavefrontOBJReader and FileName (singular)
 if TURBINE_MODEL_PATH.lower().endswith('.obj'):
-    turbine_reader = pv_s.WavefrontOBJReader(FileNames=[TURBINE_MODEL_PATH])
+    turbine_reader = pv_s.WavefrontOBJReader(FileName=TURBINE_MODEL_PATH) # Changed to singular and no list
 elif TURBINE_MODEL_PATH.lower().endswith('.vtp'):
-    turbine_reader = pv_s.XMLPolyDataReader(FileName=[TURBINE_MODEL_PATH])
+    turbine_reader = pv_s.XMLPolyDataReader(FileName=TURBINE_MODEL_PATH) # Changed to singular and no list
 elif TURBINE_MODEL_PATH.lower().endswith('.stl'):
-    turbine_reader = pv_s.STLReader(FileNames=[TURBINE_MODEL_PATH])
+    turbine_reader = pv_s.STLReader(FileName=TURBINE_MODEL_PATH) # Changed to singular and no list
 else:
     print(f"Error: Unsupported turbine model format: {os.path.splitext(TURBINE_MODEL_PATH)[1]}. Supported: .obj, .vtp, .stl")
     sys.exit(1)
