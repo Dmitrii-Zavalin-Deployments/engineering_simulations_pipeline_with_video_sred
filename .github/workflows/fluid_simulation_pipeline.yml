@@ -47,7 +47,7 @@ jobs:
       
       - name: Debug ParaView Python Environment
         # This crucial step checks what's actually available in paraview.simple
-        run: |
+        run: | # The '|' indicates a multi-line literal string.
           echo "Verifying pvpython path:"
           which pvpython
           echo ""
