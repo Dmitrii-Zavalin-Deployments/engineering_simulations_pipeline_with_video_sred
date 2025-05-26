@@ -61,7 +61,7 @@ pv_s.SetActiveView(render_view)
 fluid_display = pv_s.Show(fluid_reader, render_view)
 fluid_display.Representation = 'Volume' # Or 'Outline', 'Surface'
 fluid_display.Opacity = 0.3 # Make it semi-transparent
-# Removed fluid_display.EnableOpacityMapping = 1
+# Removed fluid_display.EnableOpacityMapping = 1 (not needed/relevant for simple volume rendering)
 
 # Assuming 'Temperature' is the scalar field you want to visualize in the fluid volume
 # Adjust RGBPoints based on your expected temperature range and desired colors
@@ -93,57 +93,18 @@ streamlines = pv_s.StreamTracerWithCustomSource(Input=fluid_reader, SeedSource=l
 streamlines.Vectors = ['POINTS', 'Velocity'] # Assuming 'Velocity' is a vector field
 streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
 
-# --- TEMPORARY DIAGNOSTIC BLOCK: Print all accessible properties of streamlines ---
-print("\n--- StreamTracerWithCustomSource Accessible Properties ---")
-# Using sorted(dir(obj)) for cleaner output
-for prop_name in sorted(dir(streamlines)):
-    if not prop_name.startswith('_') and not callable(getattr(streamlines, prop_name)):
-        try:
-            # Attempt to get the property value to confirm it's a readable property
-            prop_value = getattr(streamlines, prop_name)
-            print(f"  Property: {prop_name} = {prop_value}")
-        except AttributeError:
-            # This might happen for write-only properties or properties not yet initialized
-            print(f"  Property: {prop_name} (AttributeError: not directly readable)")
-        except Exception as e:
-            # Catch any other potential errors during property access
-            print(f"  Property: {prop_name} (Error accessing: {e})")
-print("--- End StreamTracerWithCustomSource Properties ---\n")
-# --- END TEMPORARY DIAGNOSTIC BLOCK ---
-
-
+# Removed the diagnostic print block as we now have the property names.
 # Adjust streamline integration parameters for better visualization
-# Try setting IntegrationStepUnit first, then the associated length/step properties
-streamlines.IntegrationStepUnit = 'Length' # This line was previously accepted
+streamlines.IntegrationStepUnit = 'Length'
 
 # Calculate a rough estimate for steps based on the maximum domain extent
 max_domain_extent = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
 
-# Attempt 1: Try InitialIntegrationStepLength and MaximumNumberOfSteps (common StreamTracer names)
-# If these fail, the diagnostic block above will be crucial.
-try:
-    streamlines.InitialIntegrationStepLength = 0.01 # Adjust based on your domain size for smoother lines
-    streamlines.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.InitialIntegrationStepLength)
-    print(f"ParaView: Streamline InitialIntegrationStepLength set to {streamlines.InitialIntegrationStepLength}")
-    print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.MaximumNumberOfSteps}")
-except AttributeError:
-    # If the above failed, try the names from your brainstorming
-    print("ParaView: InitialIntegrationStepLength or MaximumNumberOfSteps failed. Trying alternative names.")
-    try:
-        # As per your brainstorming, try MaximumSteps and MaximumPropagation
-        # Note: MaximumPropagation typically sets the total length regardless of steps.
-        # It's less common to set both MaximumSteps and MaximumPropagation directly unless their interaction is clear.
-        # Let's try MaximumSteps first as a direct replacement for MaximumNumberOfSteps.
-        streamlines.IntegrationStepLength = 0.01 # Revert to common step length if InitialIntegrationStepLength fails
-        streamlines.MaximumSteps = int(max_domain_extent * 1.5 / streamlines.IntegrationStepLength)
-        print(f"ParaView: Streamline IntegrationStepLength set to {streamlines.IntegrationStepLength}")
-        print(f"ParaView: Streamline MaximumSteps set to {streamlines.MaximumSteps}")
-    except AttributeError:
-        print("ParaView: MaximumSteps also failed. Consulting diagnostic output will be necessary.")
-        # If all direct attempts fail, the dir() output will guide the next step.
-        # For now, we'll let the script proceed and potentially crash,
-        # relying on the diagnostic print.
-        pass # Allow the script to continue to the save animation, if it can
+# Confirmed correct property names from diagnostic output for ParaView 5.11.2:
+streamlines.InitialStepLength = 0.01 # Adjust based on your domain size for smoother lines
+streamlines.MaximumSteps = int(max_domain_extent * 1.5 / streamlines.InitialStepLength)
+print(f"ParaView: Streamline InitialStepLength set to {streamlines.InitialStepLength}")
+print(f"ParaView: Streamline MaximumSteps set to {streamlines.MaximumSteps}")
 
 
 streamlines_display = pv_s.Show(streamlines, render_view)
@@ -165,9 +126,10 @@ print("ParaView: Displaying turbine model.")
 # --- 4. Setup Animation ---
 animation_scene = pv_s.GetAnimationScene()
 animation_scene.PlayMode = 'Snap To TimeSteps' # Important for PVD files
-animation_scene.UpdateAnimationSteps() # Get time steps from loaded data
+# animation_scene.UpdateAnimationSteps() # REMOVED: This attribute does not exist in PV 5.11.2 for vtkSMAnimationScene
 
-# Set the animation time range to match the loaded data
+# The animation scene's time steps are automatically updated when the PVDReader loads data.
+# We simply need to set the scene's start/end times based on the reader's available timesteps.
 animation_scene.StartTime = fluid_reader.TimestepValues[0]
 animation_scene.EndTime = fluid_reader.TimestepValues[-1]
 animation_scene.NumberOfFrames = len(fluid_reader.TimestepValues)
