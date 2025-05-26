@@ -23,25 +23,17 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install Python dependencies (if any)
-        # Even if json_to_vtk.py isn't run, other scripts like paraview_visualization.py might have Python deps.
         run: pip install -r requirements.txt
 
       - name: Debug Repository Structure (Full)
         run: ls -R "$GITHUB_WORKSPACE"
 
-      # Removed: "Verify json_to_vtk.py Script Exists" - not needed as VTK output is pre-existing
-      # Removed: "Run JSON to VTK Conversion" - not needed as VTK output is pre-existing
-
-      # Removed: "Commit and Push Generated VTK Output to Repository (Optional)"
-      # This step is removed as VTK files are already in the repository.
-
       - name: Download ParaView (Headless Version)
-        # This step is essential to install ParaView's pvpython on the runner.
-        # Without it, the 'pvpython' command in the next step will fail.
         run: |
           PV_VERSION="5.11.2" # Recommended version. Check if it has Python 3.9 or compatible.
           PV_DIR="ParaView-${PV_VERSION}-MPI-Linux-Python3.9-x86_64"
           PV_TAR="${PV_DIR}.tar.gz"
+          # Ensure the URL is correct for the chosen version. For 5.11.2, it's under v5.11/
           PV_URL="https://www.paraview.org/files/v${PV_VERSION%.*}/${PV_TAR}"
 
           echo "Attempting to download ParaView from: $PV_URL"
@@ -53,8 +45,30 @@ jobs:
           echo "/opt/${PV_DIR}/bin" >> $GITHUB_PATH
           echo "ParaView's pvpython should now be in PATH."
       
+      - name: Debug ParaView Python Environment
+        # This crucial step checks what's actually available in paraview.simple
+        run: |
+          echo "Verifying pvpython path:"
+          which pvpython
+          echo ""
+
+          echo "Listing contents of paraview.simple module:"
+          pvpython -c "
+import paraview.simple as ps
+import sys
+try:
+    print(f'ParaView version (if available): {ps.ParaViewVersion()}')
+except AttributeError:
+    print('ParaViewVersion() not found.')
+print(f'paraview.simple module path: {ps.__file__}')
+print('\n--- Attributes in paraview.simple ---')
+for attr in sorted(dir(ps)):
+    if not attr.startswith('__'): # Filter out internal attributes
+        print(attr)
+print('------------------------------------')"
+          echo "Debugging ParaView environment complete."
+
       - name: Verify paraview_visualization.py Script Exists
-        # This check ensures the visualization script is in place before attempting to run it.
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/src/paraview_visualization.py" ]; then
             echo "❌ Error: paraview_visualization.py not found in src directory! Please ensure it's there."
@@ -62,17 +76,15 @@ jobs:
           fi
 
       - name: Run ParaView Python script to generate video
-        # The video will be saved directly into the 'data/testing-input-output/' directory.
         run: |
           OUTPUT_VIDEO_PATH="$GITHUB_WORKSPACE/data/testing-input-output/turbine_flow_animation.mp4"
           
           pvpython "$GITHUB_WORKSPACE/src/paraview_visualization.py" \
             --pvd-file "$GITHUB_WORKSPACE/data/testing-input-output/vtk_output/turbine_flow_animation.pvd" \
             --turbine-model "$GITHUB_WORKSPACE/data/testing-input-output/3d_model.obj" \
-            --output-video "$OUTPUT_VIDEO_PATH" # Pass the full output path to the script
+            --output-video "$OUTPUT_VIDEO_PATH"
 
       - name: Commit and Push Generated Video to Repository
-        # This step commits the newly generated video file.
         env:
           GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
@@ -80,17 +92,16 @@ jobs:
           git config --global user.name "${GIT_USER_NAME}"
           git config --global user.email "${GIT_USER_EMAIL}"
 
-          cd "$GITHUB_WORKSPACE" # Navigate to the root of your repository
+          cd "$GITHUB_WORKSPACE"
 
           VIDEO_FILE="data/testing-input-output/turbine_flow_animation.mp4"
 
           if [ -f "${VIDEO_FILE}" ]; then
-            git add "${VIDEO_FILE}" # Stage the newly generated video file
-            git status # Display current git status for clarity in logs
-
+            git add "${VIDEO_FILE}"
+            git status
             if [[ $(git diff --cached --quiet; echo $?) -ne 0 ]]; then
               git commit -m "Auto-update: Generated CFD visualization video"
-              git push origin HEAD # Push changes to the current branch
+              git push origin HEAD
             else
               echo "✅ No changes to video file to commit!"
             fi
