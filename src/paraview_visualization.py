@@ -85,23 +85,65 @@ print(f"ParaView: Fluid data bounds: {bounds}")
 # This example places a line across the inlet (min X) face
 line_source = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]], # min X, min Y, min Z
                         Point2=[bounds[0], bounds[3], bounds[5]]) # min X, max Y, max Z
-# Corrected: Set Resolution on the line_source itself for number of seed points
+# Set Resolution on the line_source itself for number of seed points
 line_source.Resolution = 99 # For 100 points, set Resolution to 99
 
-# Corrected: Use StreamTracerWithCustomSource
+# Use StreamTracerWithCustomSource
 streamlines = pv_s.StreamTracerWithCustomSource(Input=fluid_reader, SeedSource=line_source)
 streamlines.Vectors = ['POINTS', 'Velocity'] # Assuming 'Velocity' is a vector field
 streamlines.IntegrationDirection = 'BOTH' # Forward, Backward, Both
 
-# Adjust number of streamlines and integration parameters for better visualization
-streamlines.IntegrationStepUnit = 'Length'
-# Corrected: Use InitialStepLength directly on streamlines
-streamlines.InitialStepLength = 0.01 # Adjust based on your domain size for smoother lines
+# --- TEMPORARY DIAGNOSTIC BLOCK: Print all accessible properties of streamlines ---
+print("\n--- StreamTracerWithCustomSource Accessible Properties ---")
+# Using sorted(dir(obj)) for cleaner output
+for prop_name in sorted(dir(streamlines)):
+    if not prop_name.startswith('_') and not callable(getattr(streamlines, prop_name)):
+        try:
+            # Attempt to get the property value to confirm it's a readable property
+            prop_value = getattr(streamlines, prop_name)
+            print(f"  Property: {prop_name} = {prop_value}")
+        except AttributeError:
+            # This might happen for write-only properties or properties not yet initialized
+            print(f"  Property: {prop_name} (AttributeError: not directly readable)")
+        except Exception as e:
+            # Catch any other potential errors during property access
+            print(f"  Property: {prop_name} (Error accessing: {e})")
+print("--- End StreamTracerWithCustomSource Properties ---\n")
+# --- END TEMPORARY DIAGNOSTIC BLOCK ---
 
-# Corrected: Use MaxSteps directly on streamlines
+
+# Adjust streamline integration parameters for better visualization
+# Try setting IntegrationStepUnit first, then the associated length/step properties
+streamlines.IntegrationStepUnit = 'Length' # This line was previously accepted
+
+# Calculate a rough estimate for steps based on the maximum domain extent
 max_domain_extent = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
-streamlines.MaxSteps = int(max_domain_extent * 1.5 / streamlines.InitialStepLength)
-print(f"ParaView: Streamline MaxSteps set to {streamlines.MaxSteps}")
+
+# Attempt 1: Try InitialIntegrationStepLength and MaximumNumberOfSteps (common StreamTracer names)
+# If these fail, the diagnostic block above will be crucial.
+try:
+    streamlines.InitialIntegrationStepLength = 0.01 # Adjust based on your domain size for smoother lines
+    streamlines.MaximumNumberOfSteps = int(max_domain_extent * 1.5 / streamlines.InitialIntegrationStepLength)
+    print(f"ParaView: Streamline InitialIntegrationStepLength set to {streamlines.InitialIntegrationStepLength}")
+    print(f"ParaView: Streamline MaximumNumberOfSteps set to {streamlines.MaximumNumberOfSteps}")
+except AttributeError:
+    # If the above failed, try the names from your brainstorming
+    print("ParaView: InitialIntegrationStepLength or MaximumNumberOfSteps failed. Trying alternative names.")
+    try:
+        # As per your brainstorming, try MaximumSteps and MaximumPropagation
+        # Note: MaximumPropagation typically sets the total length regardless of steps.
+        # It's less common to set both MaximumSteps and MaximumPropagation directly unless their interaction is clear.
+        # Let's try MaximumSteps first as a direct replacement for MaximumNumberOfSteps.
+        streamlines.IntegrationStepLength = 0.01 # Revert to common step length if InitialIntegrationStepLength fails
+        streamlines.MaximumSteps = int(max_domain_extent * 1.5 / streamlines.IntegrationStepLength)
+        print(f"ParaView: Streamline IntegrationStepLength set to {streamlines.IntegrationStepLength}")
+        print(f"ParaView: Streamline MaximumSteps set to {streamlines.MaximumSteps}")
+    except AttributeError:
+        print("ParaView: MaximumSteps also failed. Consulting diagnostic output will be necessary.")
+        # If all direct attempts fail, the dir() output will guide the next step.
+        # For now, we'll let the script proceed and potentially crash,
+        # relying on the diagnostic print.
+        pass # Allow the script to continue to the save animation, if it can
 
 
 streamlines_display = pv_s.Show(streamlines, render_view)
