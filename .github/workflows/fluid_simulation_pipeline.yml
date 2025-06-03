@@ -25,6 +25,25 @@ jobs:
       - name: Install Python dependencies (if any)
         run: pip install -r requirements.txt
 
+      - name: Delete All Previous Files in Testing-Input-Output
+        run: |
+          if [ -d "$GITHUB_WORKSPACE/data/testing-input-output/" ]; then
+            rm -rf "$GITHUB_WORKSPACE/data/testing-input-output/*"
+            echo "🗑️ Deleted all files inside data/testing-input-output/."
+          else
+            echo "ℹ️ No previous files found in data/testing-input-output/—proceeding with new generation."
+          fi
+      
+      - name: Make `download_from_dropbox.sh` Executable
+        run: chmod +x src/download_from_dropbox.sh
+  
+      - name: Download Simulation Files from Dropbox
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        run: src/download_from_dropbox.sh
+
       - name: Debug Repository Structure (Full)
         run: ls -R "$GITHUB_WORKSPACE"
 
@@ -102,33 +121,48 @@ jobs:
           PV_ENABLE_OSMESA: 1 # Essential for headless rendering
           PV_OFFSCREEN_HEADLESS: 1 # Also useful for headless environments
       
-      - name: Commit and Push Generated PNG Frames to Repository
-        env:
-          GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
-          GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-        run: |
-          git config --global user.name "${GIT_USER_NAME}"
-          git config --global user.email "${GIT_USER_EMAIL}"
-
-          cd "$GITHUB_WORKSPACE"
-
-          # Get the full path to the directory containing the PNGs from the previous step's output
-          # This should now work correctly with the $GITHUB_OUTPUT fix
-          PNG_DIR="${{ steps.generate_frames.outputs.PNG_OUTPUT_DIR }}"
-
-          echo "Attempting to commit PNG frames from: $PNG_DIR"
+      # - name: Commit and Push Generated PNG Frames to Repository
+      #   env:
+      #     GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
+      #     GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
+      #   run: |
+      #     git config --global user.name "${GIT_USER_NAME}"
+      #     git config --global user.email "${GIT_USER_EMAIL}"
+      
+      #     cd "$GITHUB_WORKSPACE"
+      
+      #     # Get the full path to the directory containing the PNGs from the previous step's output
+      #     # This should now work correctly with the $GITHUB_OUTPUT fix
+      #     PNG_DIR="${{ steps.generate_frames.outputs.PNG_OUTPUT_DIR }}"
+      
+      #     echo "Attempting to commit PNG frames from: $PNG_DIR"
           
-          # Check if the directory exists and contains any files
-          if [ -d "${PNG_DIR}" ] && [ -n "$(ls -A "${PNG_DIR}")" ]; then
-            git add "${PNG_DIR}" # Add the entire directory
-            git status
-            # Check if there are actual changes staged for commit
-            if [[ $(git diff --cached --quiet; echo $?) -ne 0 ]]; then
-              git commit -m "Auto-update: Generated CFD visualization PNG frames"
-              git push origin HEAD
-            else
-              echo "✅ No new or changed PNG frames to commit!"
-            fi
-          else
-            echo "❌ No PNG frames found in ${PNG_DIR}, skipping commit."
-          fi
+      #     # Check if the directory exists and contains any files
+      #     if [ -d "${PNG_DIR}" ] && [ -n "$(ls -A "${PNG_DIR}")" ]; then
+      #       git add "${PNG_DIR}" # Add the entire directory
+      #       git status
+      #       # Check if there are actual changes staged for commit
+      #       if [[ $(git diff --cached --quiet; echo $?) -ne 0 ]]; then
+      #         git commit -m "Auto-update: Generated CFD visualization PNG frames"
+      #         git push origin HEAD
+      #       else
+      #         echo "✅ No new or changed PNG frames to commit!"
+      #       fi
+      #     else
+      #       echo "❌ No PNG frames found in ${PNG_DIR}, skipping commit."
+      #     fi
+
+      - name: Make `upload_to_dropbox.sh` Executable
+        run: chmod +x src/upload_to_dropbox.sh
+  
+      - name: Debug Before Dropbox Upload
+        run: |
+          echo "🔍 Checking directory structure before upload..."
+          ls -R $GITHUB_WORKSPACE
+  
+      - name: Upload Fluid Simulation Input to Dropbox
+        env:
+          APP_KEY: ${{ secrets.APP_KEY }}
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+        run: src/upload_to_dropbox.sh
