@@ -67,23 +67,17 @@ if __name__ == "__main__":
     render_view.KeyLightIntensity = 0.7
     render_view.FillLightKFRatio = 3.0
 
-    # --- Add Particle Tracer ---
+    # --- Add Stream Tracer ---
     bounds = fluid_reader.GetDataInformation().GetBounds()
-    line_seed = pv_s.Line(
-        Point1=[bounds[0], bounds[2], bounds[4]],
-        Point2=[bounds[0], bounds[3], bounds[5]],
-        Resolution=100
-    )
+    stream_tracer = pv_s.StreamTracer(Input=fluid_reader, SeedType='Line')
+    stream_tracer.SeedType.Point1 = [bounds[0], bounds[2], bounds[4]]
+    stream_tracer.SeedType.Point2 = [bounds[0], bounds[3], bounds[5]]
+    stream_tracer.SeedType.Resolution = 100
+    stream_tracer.Vectors = ['POINTS', 'Velocity']
+    stream_tracer.IntegrationDirection = 'FORWARD'
+    stream_tracer.MaximumStepLength = 0.01
 
-    particle_tracer = pv_s.ParticleTracer()
-    particle_tracer.Input = fluid_reader
-    particle_tracer.SeedSource = line_seed
-    particle_tracer.IntegrationDirection = 'FORWARD'
-    particle_tracer.MaximumStepLength = 0.01
-    particle_tracer.TerminalSpeed = 1e-12
-    particle_tracer.SeedTime = 0.0
-
-    glyph = pv_s.Glyph(Input=particle_tracer,
+    glyph = pv_s.Glyph(Input=stream_tracer,
                        GlyphType='Sphere',
                        ScaleMode='scalar',
                        ScaleFactor=0.2)
@@ -109,7 +103,7 @@ if __name__ == "__main__":
     cx = (bounds[0] + bounds[1]) / 2
     cy = (bounds[2] + bounds[3]) / 2
     cz = (bounds[4] + bounds[5]) / 2
-    dist = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4]) * 2
+    dist = max(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]) * 2
 
     render_view.CameraPosition = [cx + dist, cy + dist, cz + dist]
     render_view.CameraFocalPoint = [cx, cy, cz]
