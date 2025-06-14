@@ -58,8 +58,7 @@ if __name__ == "__main__":
     pv_s.SetActiveView(render_view)
     render_view.OSPRayMaterialLibrary = pv_s.GetMaterialLibrary()
     render_view.Shadows = 1
-    render_view.BackEnd = 'pathtracer'
-    render_view.AmbientOcclusion = 1
+    render_view.BackEnd = 'pathtracer'  # Enables ray tracing
 
     # --- Place Lights ---
     render_view.KeyLightWarmth = 0.6
