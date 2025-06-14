@@ -26,7 +26,7 @@ pv_s.ResetSession()
 fluid = pv_s.PVDReader(FileName=PVD_PATH)
 pv_s.UpdatePipeline()
 
-# --- Compute Velocity Magnitude if needed ---
+# --- Compute Velocity Magnitude ---
 calc = pv_s.Calculator(Input=fluid)
 calc.ResultArrayName = 'VelMag'
 calc.Function = 'mag(Velocity)'
@@ -36,8 +36,8 @@ pv_s.UpdatePipeline()
 view = pv_s.GetActiveViewOrCreate('RenderView')
 pv_s.SetActiveView(view)
 view.ViewSize = [1920, 1080]
-view.BackEnd = 'pathtracer'
-view.Shadows = 1  # AmbientOcclusion removed for 5.11.2 compatibility
+view.BackEnd = 'pathtracer'  # Enables OSPRay ray tracing
+view.Shadows = 1  # AmbientOcclusion is not available in ParaView 5.11.2
 
 # --- Volume Rendering ---
 volume_display = pv_s.Show(calc, view)
@@ -65,7 +65,7 @@ bounds = calc.GetDataInformation().GetBounds()
 cx = (bounds[0] + bounds[1]) / 2
 cy = (bounds[2] + bounds[3]) / 2
 cz = (bounds[4] + bounds[5]) / 2
-d = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4])
+d = max(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4])
 
 view.CameraPosition = [cx + d, cy + d, cz + d]
 view.CameraFocalPoint = [cx, cy, cz]
