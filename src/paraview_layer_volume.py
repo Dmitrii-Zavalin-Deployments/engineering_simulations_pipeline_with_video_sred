@@ -37,8 +37,7 @@ view = pv_s.GetActiveViewOrCreate('RenderView')
 pv_s.SetActiveView(view)
 view.ViewSize = [1920, 1080]
 view.BackEnd = 'pathtracer'
-view.Shadows = 1
-view.AmbientOcclusion = 1
+view.Shadows = 1  # AmbientOcclusion removed for 5.11.2 compatibility
 
 # --- Volume Rendering ---
 volume_display = pv_s.Show(calc, view)
@@ -80,7 +79,7 @@ scene.EndTime = fluid.TimestepValues[-1]
 scene.NumberOfFrames = len(fluid.TimestepValues)
 
 pv_s.Render()
-pv_s.SaveAnimation(FRAME_PATTERN, view, ImageResolution=[1920,1080], ImageQuality=90)
+pv_s.SaveAnimation(FRAME_PATTERN, view, ImageResolution=[1920, 1080], ImageQuality=90)
 pv_s.Disconnect()
 
 print(f"✅ Volume pass complete.")
