@@ -32,7 +32,7 @@ seed = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]],
                  Point2=[bounds[0], bounds[3], bounds[5]], Resolution=100)
 
 # --- Particle Tracer & Glyphs ---
-tracer = pv_s.ParticleTracer(Inputs=[fluid, seed])
+tracer = pv_s.ParticleTracer(fluid, seed)
 tracer.Vectors = ['POINTS', 'Velocity']
 tracer.MaximumStepLength = 0.01
 
@@ -49,13 +49,13 @@ glyph_display.Opacity = 0.5
 view = pv_s.GetActiveViewOrCreate('RenderView')
 view.ViewSize = [1920, 1080]
 view.BackEnd = 'pathtracer'
-view.Shadows = 1  # Compatible with ParaView 5.11.2; omit AmbientOcclusion
+view.Shadows = 1  # AmbientOcclusion is not supported in ParaView 5.11.2
 
 # --- Camera Position ---
 cx = (bounds[0] + bounds[1]) / 2
 cy = (bounds[2] + bounds[3]) / 2
 cz = (bounds[4] + bounds[5]) / 2
-d = max(bounds[1]-bounds[0], bounds[3]-bounds[2], bounds[5]-bounds[4]) * 2
+d = max(bounds[1] - bounds[0], bounds[3] - bounds[2], bounds[5] - bounds[4]) * 2
 
 view.CameraPosition = [cx + d, cy + d, cz + d]
 view.CameraFocalPoint = [cx, cy, cz]
