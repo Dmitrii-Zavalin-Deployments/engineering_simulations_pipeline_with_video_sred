@@ -32,9 +32,13 @@ seed = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]],
                  Point2=[bounds[0], bounds[3], bounds[5]], Resolution=100)
 
 # --- Particle Tracer & Glyphs ---
-tracer = pv_s.ParticleTracer(fluid, seed)
-tracer.Vectors = ['POINTS', 'Velocity']
+tracer = pv_s.ParticleTracer()
+tracer.Input = fluid
+tracer.SeedSource = seed
 tracer.MaximumStepLength = 0.01
+tracer.TerminalSpeed = 1e-12
+tracer.SeedTime = 0.0
+tracer.IntegrationDirection = 'FORWARD'
 
 glyph = pv_s.Glyph(Input=tracer, GlyphType='Sphere', ScaleMode='scalar', ScaleFactor=0.2)
 
