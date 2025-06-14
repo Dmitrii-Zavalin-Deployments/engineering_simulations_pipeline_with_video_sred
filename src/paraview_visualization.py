@@ -67,20 +67,19 @@ if __name__ == "__main__":
     render_view.KeyLightIntensity = 0.7
     render_view.FillLightKFRatio = 3.0
 
-    # --- Add Stream Tracer ---
+    # --- Stream Tracer for Particles ---
     bounds = fluid_reader.GetDataInformation().GetBounds()
-    stream_tracer = pv_s.StreamTracer(Input=fluid_reader, SeedType='Line')
-    stream_tracer.SeedType.Point1 = [bounds[0], bounds[2], bounds[4]]
-    stream_tracer.SeedType.Point2 = [bounds[0], bounds[3], bounds[5]]
-    stream_tracer.SeedType.Resolution = 100
-    stream_tracer.Vectors = ['POINTS', 'Velocity']
-    stream_tracer.IntegrationDirection = 'FORWARD'
-    stream_tracer.MaximumStepLength = 0.01
+    tracer = pv_s.StreamTracer(Input=fluid_reader, SeedType='Line')
+    tracer.SeedType.Point1 = [bounds[0], bounds[2], bounds[4]]
+    tracer.SeedType.Point2 = [bounds[0], bounds[3], bounds[5]]
+    tracer.SeedType.Resolution = 100
+    tracer.Vectors = ['POINTS', 'Velocity']
+    tracer.IntegrationDirection = 'FORWARD'
+    tracer.MaximumStepLength = 0.01
 
-    glyph = pv_s.Glyph(Input=stream_tracer,
-                       GlyphType='Sphere',
-                       ScaleMode='scalar',
-                       ScaleFactor=0.2)
+    glyph = pv_s.Glyph(Input=tracer, GlyphType='Sphere')
+    glyph.ScaleArray = ['POINTS', 'Velocity']
+    glyph.ScaleFactor = 0.2
     pv_s.UpdatePipeline()
 
     # --- Display Particles ---
