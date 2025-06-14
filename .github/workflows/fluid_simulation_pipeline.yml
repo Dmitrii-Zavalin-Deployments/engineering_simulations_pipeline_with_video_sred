@@ -103,6 +103,20 @@ jobs:
           echo "🖼️ Rendered Frame Count:"
           find "${{ steps.generate_frames.outputs.PNG_OUTPUT_DIR }}" -name "*.png" | wc -l
 
+      - name: 🎬 Render Particle-Only Layer
+        run: |
+          OUTPUT="$GITHUB_WORKSPACE/data/testing-input-output/particles_pass.mp4"
+          PVD="$GITHUB_WORKSPACE/data/testing-input-output/vtk_output/turbine_flow_animation.pvd"
+          MODEL="$GITHUB_WORKSPACE/data/testing-input-output/3d_model.obj"
+
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+
+          /opt/ParaView-5.11.2-MPI-Linux-Python3.9-x86_64/bin/pvpython src/paraview_layer_particles.py \
+            --pvd-file "$PVD" \
+            --turbine-model "$MODEL" \
+            --output-video "$OUTPUT"
+
       - name: ☁️ Upload Rendered PNG Frames to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
