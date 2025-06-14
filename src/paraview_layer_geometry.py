@@ -42,8 +42,7 @@ view = pv_s.GetActiveViewOrCreate('RenderView')
 pv_s.SetActiveView(view)
 view.ViewSize = [1920, 1080]
 view.BackEnd = 'pathtracer'  # Enables OSPRay path tracing
-view.Shadows = 1
-view.AmbientOcclusion = 1
+view.Shadows = 1  # Leave AmbientOcclusion unset for ParaView 5.11.2
 
 # --- Show Turbine Mesh Only ---
 turbine_display = pv_s.Show(turbine_reader, view)
