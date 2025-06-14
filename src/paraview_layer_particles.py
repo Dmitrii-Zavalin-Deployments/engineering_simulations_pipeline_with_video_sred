@@ -48,7 +48,6 @@ glyph_display.Opacity = 0.5
 # --- Render View ---
 view = pv_s.GetActiveViewOrCreate('RenderView')
 view.ViewSize = [1920, 1080]
-view.UseOSPRay = 1
 view.BackEnd = 'pathtracer'
 view.Shadows = 1
 view.AmbientOcclusion = 1
@@ -74,6 +73,7 @@ pv_s.Render()
 pv_s.SaveAnimation(OUTPUT_PATTERN, view, ImageResolution=[1920,1080], ImageQuality=90)
 pv_s.Disconnect()
 
+print(f"✅ Particle-only pass complete.")
 print(f"PNG_OUTPUT_DIR={OUTPUT_DIR}")
 
 
