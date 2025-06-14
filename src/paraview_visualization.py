@@ -74,9 +74,7 @@ if __name__ == "__main__":
         Point2=[bounds[0], bounds[3], bounds[5]],
         Resolution=100
     )
-    particle_tracer = pv_s.ParticleTracer(
-        Inputs=[fluid_reader, line_seed]
-    )
+    particle_tracer = pv_s.ParticleTracer(fluid_reader, line_seed)
     particle_tracer.Vectors = ['POINTS', 'Velocity']
     particle_tracer.IntegrationDirection = 'FORWARD'
     particle_tracer.MaximumStepLength = 0.01
