@@ -1,168 +1,114 @@
-name: Fluid Data Processing and Visualization
+name: Turbine Flow Frame Generation (ParaView Headless)
 
 on:
   push:
     branches:
-      - "**" # Triggers on any branch push
-  workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+      - "**"
+  workflow_dispatch:
 
 jobs:
-  process_fluid_data:
-    runs-on: ubuntu-latest # Uses the latest Ubuntu runner provided by GitHub Actions
+  render_and_upload_frames:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3 # Clones your repository into the runner
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: 🐍 Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9" # Ensure this matches the Python version used by your ParaView build if possible
+          python-version: "3.9"
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
-
-      - name: Install Python dependencies (if any)
-        run: pip install -r requirements.txt
-
-      - name: Delete All Previous Files in Testing-Input-Output
+      - name: 🧼 Clean Previous Output
         run: |
           if [ -d "$GITHUB_WORKSPACE/data/testing-input-output/" ]; then
             rm -rf "$GITHUB_WORKSPACE/data/testing-input-output/*"
-            echo "🗑️ Deleted all files inside data/testing-input-output/."
+            echo "🗑️ Deleted previous output."
           else
-            echo "ℹ️ No previous files found in data/testing-input-output/—proceeding with new generation."
+            echo "ℹ️ No existing output found."
           fi
-      
-      - name: Make `download_from_dropbox.sh` Executable
-        run: chmod +x src/download_from_dropbox.sh
-  
-      - name: Download Simulation Files from Dropbox
+
+      - name: 🛠️ Install Python Dependencies
+        run: pip install -r requirements.txt
+
+      - name: 🔓 Set Executable Permissions
+        run: |
+          chmod +x src/download_from_dropbox.sh
+          chmod +x src/upload_to_dropbox.sh
+
+      - name: 📡 Download Input Files from Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: src/download_from_dropbox.sh
 
-      - name: Debug Repository Structure (Full)
-        run: ls -R "$GITHUB_WORKSPACE"
-
-      - name: Download ParaView (Headless Version)
+      - name: 📦 Install ParaView (Headless)
         run: |
-          PV_VERSION="5.11.2" # Recommended version. Check if it has Python 3.9 or compatible.
+          PV_VERSION="5.11.2"
           PV_DIR="ParaView-${PV_VERSION}-MPI-Linux-Python3.9-x86_64"
           PV_TAR="${PV_DIR}.tar.gz"
-          # Ensure the URL is correct for the chosen version. For 5.11.2, it's under v5.11/
           PV_URL="https://www.paraview.org/files/v${PV_VERSION%.*}/${PV_TAR}"
 
-          echo "Attempting to download ParaView from: $PV_URL"
           wget "$PV_URL" -O "/tmp/$PV_TAR" --no-check-certificate
-          
-          echo "Extracting ParaView to /opt..."
           sudo tar -xzf "/tmp/$PV_TAR" -C /opt
-          
           echo "/opt/${PV_DIR}/bin" >> $GITHUB_PATH
-          echo "ParaView's pvpython should now be in PATH."
-    
-      - name: Debug ParaView Python Environment
-        # Verify the debug script exists before running
+
+      - name: ✅ Validate ParaView Environment
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/src/debug_paraview_env.py" ]; then
-            echo "❌ Error: debug_paraview_env.py not found in src directory!"
+            echo "❌ Missing debug_paraview_env.py"
             exit 1
           fi
-          echo "Verifying pvpython path:"
           which pvpython
-          echo ""
           pvpython "$GITHUB_WORKSPACE/src/debug_paraview_env.py"
 
-      - name: Verify paraview_visualization.py Script Exists
+      - name: 🧠 Check Visualization Script
         run: |
           if [ ! -f "$GITHUB_WORKSPACE/src/paraview_visualization.py" ]; then
-            echo "❌ Error: paraview_visualization.py not found in src directory! Please ensure it's there."
+            echo "❌ Visualization script not found!"
             exit 1
           fi
 
-      - name: Install Xvfb
+      - name: 🖥️ Install Xvfb for Offscreen Rendering
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Run ParaView Python script to generate image sequence with Xvfb
-        id: generate_frames # Give this step an ID to access its outputs
+      - name: 🎬 Run ParaView and Render Frames
+        id: generate_frames
         run: |
-          # The --output-video argument is used by the Python script to derive the base output directory for the frames.
-          # The actual filename (e.g., turbine_flow_animation.mp4) isn't used by the Python script itself for output anymore,
-          # but the path part (data/testing-input-output/) is.
-          OUTPUT_PLACEHOLDER_PATH="$GITHUB_WORKSPACE/data/testing-input-output/turbine_flow_animation.mp4" 
+          OUTPUT_PATH="$GITHUB_WORKSPACE/data/testing-input-output/turbine_flow_animation.mp4"
           PVD_FILE="$GITHUB_WORKSPACE/data/testing-input-output/vtk_output/turbine_flow_animation.pvd"
           TURBINE_MODEL="$GITHUB_WORKSPACE/data/testing-input-output/3d_model.obj"
-          
-          # Start Xvfb on a display number (e.g., :99)
+
           Xvfb :99 -screen 0 1920x1080x24 &
           export DISPLAY=:99
-          
-          # Run pvpython with environment variables for offscreen rendering
-          # Capture the output variables for the PNG output directory
+
           PYTHON_OUTPUT=$(/opt/ParaView-5.11.2-MPI-Linux-Python3.9-x86_64/bin/pvpython \
             "$GITHUB_WORKSPACE/src/paraview_visualization.py" \
             --pvd-file "$PVD_FILE" \
             --turbine-model "$TURBINE_MODEL" \
-            --output-video "$OUTPUT_PLACEHOLDER_PATH")
+            --output-video "$OUTPUT_PATH")
 
-          # Parse output variable for the PNG output directory
           echo "$PYTHON_OUTPUT"
-          
-          # --- FIX APPLIED HERE: Use $GITHUB_OUTPUT to set step output ---
+
           PNG_OUTPUT_DIR=$(echo "$PYTHON_OUTPUT" | grep "PNG_OUTPUT_DIR=" | sed 's/PNG_OUTPUT_DIR=//')
-          echo "PNG_OUTPUT_DIR=$PNG_OUTPUT_DIR" >> "$GITHUB_OUTPUT" # This sets the step output
-          # --- END FIX ---
+          if [ -z "$PNG_OUTPUT_DIR" ]; then
+            echo "❌ PNG_OUTPUT_DIR not found in script output."
+            exit 1
+          fi
+          echo "PNG_OUTPUT_DIR=$PNG_OUTPUT_DIR" >> "$GITHUB_OUTPUT"
 
-        env:
-          # Set the offscreen rendering environment variables for ParaView
-          PV_ENABLE_OSMESA: 1 # Essential for headless rendering
-          PV_OFFSCREEN_HEADLESS: 1 # Also useful for headless environments
-      
-      # - name: Commit and Push Generated PNG Frames to Repository
-      #   env:
-      #     GIT_USER_NAME: ${{ secrets.GIT_USER_NAME }}
-      #     GIT_USER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-      #   run: |
-      #     git config --global user.name "${GIT_USER_NAME}"
-      #     git config --global user.email "${GIT_USER_EMAIL}"
-      
-      #     cd "$GITHUB_WORKSPACE"
-      
-      #     # Get the full path to the directory containing the PNGs from the previous step's output
-      #     # This should now work correctly with the $GITHUB_OUTPUT fix
-      #     PNG_DIR="${{ steps.generate_frames.outputs.PNG_OUTPUT_DIR }}"
-      
-      #     echo "Attempting to commit PNG frames from: $PNG_DIR"
-          
-      #     # Check if the directory exists and contains any files
-      #     if [ -d "${PNG_DIR}" ] && [ -n "$(ls -A "${PNG_DIR}")" ]; then
-      #       git add "${PNG_DIR}" # Add the entire directory
-      #       git status
-      #       # Check if there are actual changes staged for commit
-      #       if [[ $(git diff --cached --quiet; echo $?) -ne 0 ]]; then
-      #         git commit -m "Auto-update: Generated CFD visualization PNG frames"
-      #         git push origin HEAD
-      #       else
-      #         echo "✅ No new or changed PNG frames to commit!"
-      #       fi
-      #     else
-      #       echo "❌ No PNG frames found in ${PNG_DIR}, skipping commit."
-      #     fi
-
-      - name: Make `upload_to_dropbox.sh` Executable
-        run: chmod +x src/upload_to_dropbox.sh
-  
-      - name: Debug Before Dropbox Upload
+      - name: 🔍 Verify Frame Count
         run: |
-          echo "🔍 Checking directory structure before upload..."
-          ls -R $GITHUB_WORKSPACE
-  
-      - name: Upload Fluid Simulation Input to Dropbox
+          echo "🖼️ Rendered Frame Count:"
+          find "${{ steps.generate_frames.outputs.PNG_OUTPUT_DIR }}" -name "*.png" | wc -l
+
+      - name: ☁️ Upload Rendered PNG Frames to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
           APP_SECRET: ${{ secrets.APP_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: src/upload_to_dropbox.sh
+
+
+
