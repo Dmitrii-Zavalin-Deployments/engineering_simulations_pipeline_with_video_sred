@@ -36,7 +36,6 @@ pv_s.UpdatePipeline()
 view = pv_s.GetActiveViewOrCreate('RenderView')
 pv_s.SetActiveView(view)
 view.ViewSize = [1920, 1080]
-view.UseOSPRay = 1
 view.BackEnd = 'pathtracer'
 view.Shadows = 1
 view.AmbientOcclusion = 1
