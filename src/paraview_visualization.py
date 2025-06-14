@@ -1,3 +1,5 @@
+# src/paraview_visualization.py
+
 # This script should be run with pvpython (ParaView's Python interpreter)
 # Example:
 # pvpython paraview_visualization.py --pvd-file /path/to/data.pvd --turbine-model /path/to/geometry.obj --output-video /path/to/video.mp4
@@ -54,7 +56,6 @@ if __name__ == "__main__":
     # --- View & Renderer Setup ---
     render_view = pv_s.GetActiveViewOrCreate('RenderView')
     pv_s.SetActiveView(render_view)
-    render_view.UseOSPRay = 1
     render_view.OSPRayMaterialLibrary = pv_s.GetMaterialLibrary()
     render_view.Shadows = 1
     render_view.BackEnd = 'pathtracer'
