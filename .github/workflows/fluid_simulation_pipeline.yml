@@ -131,6 +131,18 @@ jobs:
             --turbine-model "$MODEL" \
             --output-video "$OUTPUT"
 
+      - name: 🌫️ Render Velocity Volume Layer
+        run: |
+          OUTPUT="$GITHUB_WORKSPACE/data/testing-input-output/volume_pass.mp4"
+          PVD="$GITHUB_WORKSPACE/data/testing-input-output/vtk_output/turbine_flow_animation.pvd"
+
+          Xvfb :99 -screen 0 1920x1080x24 &
+          export DISPLAY=:99
+
+          /opt/ParaView-5.11.2-MPI-Linux-Python3.9-x86_64/bin/pvpython src/paraview_layer_volume.py \
+            --pvd-file "$PVD" \
+            --output-video "$OUTPUT"
+
       - name: ☁️ Upload Rendered PNG Frames to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
