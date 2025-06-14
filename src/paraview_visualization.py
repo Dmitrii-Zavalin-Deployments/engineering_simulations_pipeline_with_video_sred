@@ -58,7 +58,7 @@ if __name__ == "__main__":
     pv_s.SetActiveView(render_view)
     render_view.OSPRayMaterialLibrary = pv_s.GetMaterialLibrary()
     render_view.Shadows = 1
-    render_view.BackEnd = 'pathtracer'  # Enables ray tracing
+    render_view.BackEnd = 'pathtracer'
 
     # --- Place Lights ---
     render_view.KeyLightWarmth = 0.6
@@ -74,8 +74,10 @@ if __name__ == "__main__":
         Point2=[bounds[0], bounds[3], bounds[5]],
         Resolution=100
     )
-    particle_tracer = pv_s.ParticleTracer(fluid_reader, line_seed)
-    particle_tracer.Vectors = ['POINTS', 'Velocity']
+
+    particle_tracer = pv_s.ParticleTracer()
+    particle_tracer.Input = fluid_reader
+    particle_tracer.SeedSource = line_seed
     particle_tracer.IntegrationDirection = 'FORWARD'
     particle_tracer.MaximumStepLength = 0.01
     particle_tracer.TerminalSpeed = 1e-12
