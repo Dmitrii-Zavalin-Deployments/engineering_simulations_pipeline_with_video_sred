@@ -49,8 +49,7 @@ glyph_display.Opacity = 0.5
 view = pv_s.GetActiveViewOrCreate('RenderView')
 view.ViewSize = [1920, 1080]
 view.BackEnd = 'pathtracer'
-view.Shadows = 1
-view.AmbientOcclusion = 1
+view.Shadows = 1  # Compatible with ParaView 5.11.2; omit AmbientOcclusion
 
 # --- Camera Position ---
 cx = (bounds[0] + bounds[1]) / 2
@@ -70,7 +69,7 @@ scene.EndTime = fluid.TimestepValues[-1]
 scene.NumberOfFrames = len(fluid.TimestepValues)
 
 pv_s.Render()
-pv_s.SaveAnimation(OUTPUT_PATTERN, view, ImageResolution=[1920,1080], ImageQuality=90)
+pv_s.SaveAnimation(OUTPUT_PATTERN, view, ImageResolution=[1920, 1080], ImageQuality=90)
 pv_s.Disconnect()
 
 print(f"✅ Particle-only pass complete.")
