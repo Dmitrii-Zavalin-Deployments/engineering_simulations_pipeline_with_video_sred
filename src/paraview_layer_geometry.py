@@ -41,8 +41,8 @@ else:
 view = pv_s.GetActiveViewOrCreate('RenderView')
 pv_s.SetActiveView(view)
 view.ViewSize = [1920, 1080]
-view.BackEnd = 'pathtracer'  # Enables OSPRay path tracing
-view.Shadows = 1  # AmbientOcclusion is unsupported in ParaView 5.11.2
+view.BackEnd = 'pathtracer'
+view.Shadows = 1  # AmbientOcclusion is not available in ParaView 5.11.2
 
 # --- Show Turbine Mesh Only ---
 turbine_display = pv_s.Show(turbine_reader, view)
@@ -62,7 +62,7 @@ view.CameraPosition = [cx + d, cy + d, cz + d]
 view.CameraFocalPoint = [cx, cy, cz]
 view.CameraViewUp = [0, 0, 1]
 
-# --- Animation Controls ---
+# --- Animation Setup ---
 scene = pv_s.GetAnimationScene()
 scene.PlayMode = 'Snap To TimeSteps'
 scene.StartTime = fluid.TimestepValues[0]
