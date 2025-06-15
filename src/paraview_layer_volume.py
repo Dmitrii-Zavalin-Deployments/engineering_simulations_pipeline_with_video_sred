@@ -36,8 +36,8 @@ pv_s.UpdatePipeline()
 view = pv_s.GetActiveViewOrCreate('RenderView')
 pv_s.SetActiveView(view)
 view.ViewSize = [1920, 1080]
-view.BackEnd = 'pathtracer'  # Enables OSPRay ray tracing
-view.Shadows = 1  # AmbientOcclusion is not available in ParaView 5.11.2
+view.BackEnd = 'pathtracer'
+view.Shadows = 1
 
 # --- Volume Rendering ---
 volume_display = pv_s.Show(calc, view)
@@ -49,11 +49,12 @@ lut.ApplyPreset('Cool to Warm', True)
 lut.RescaleTransferFunction(0.0, 10.0)
 
 otf = pv_s.GetOpacityTransferFunction('VelMag')
-otf.RemoveAllPoints()
-otf.AddPoint(0.0, 0.0)
-otf.AddPoint(1.0, 0.05)
-otf.AddPoint(5.0, 0.3)
-otf.AddPoint(10.0, 0.8)
+otf.Points = [
+    0.0, 0.0, 0.5, 0.0,
+    1.0, 0.05, 0.5, 0.0,
+    5.0, 0.3, 0.5, 0.0,
+    10.0, 0.8, 0.5, 0.0
+]
 
 volume_display.LookupTable = lut
 volume_display.OpacityArray = ['POINTS', 'VelMag']
