@@ -143,6 +143,12 @@ jobs:
             --pvd-file "$PVD" \
             --output-video "$OUTPUT"
 
+      - name: 📦 Zip Rendered Output
+        run: |
+          cd "$GITHUB_WORKSPACE/data"
+          zip -r testing-output-bundle.zip testing-input-output
+          echo "✅ Created archive: testing-output-bundle.zip"
+
       - name: ☁️ Upload Rendered PNG Frames to Dropbox
         env:
           APP_KEY: ${{ secrets.APP_KEY }}
