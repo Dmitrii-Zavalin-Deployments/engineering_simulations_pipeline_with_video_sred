@@ -26,21 +26,20 @@ print(f"🎯 Output frames: {OUTPUT_PATTERN}")
 pv_s.ResetSession()
 fluid = pv_s.PVDReader(FileName=PVD_PATH)
 
-# --- Seed Source (Line at inlet) ---
+# --- Stream Tracer ---
 bounds = fluid.GetDataInformation().GetBounds()
-seed = pv_s.Line(Point1=[bounds[0], bounds[2], bounds[4]],
-                 Point2=[bounds[0], bounds[3], bounds[5]], Resolution=100)
-
-# --- Particle Tracer & Glyphs ---
-tracer = pv_s.ParticleTracer()
-tracer.Input = fluid
-tracer.SeedSource = seed
-tracer.MaximumStepLength = 0.01
-tracer.TerminalSpeed = 1e-12
-tracer.SeedTime = 0.0
+tracer = pv_s.StreamTracer(Input=fluid, SeedType='Line')
+tracer.SeedType.Point1 = [bounds[0], bounds[2], bounds[4]]
+tracer.SeedType.Point2 = [bounds[0], bounds[3], bounds[5]]
+tracer.SeedType.Resolution = 100
+tracer.Vectors = ['POINTS', 'Velocity']
 tracer.IntegrationDirection = 'FORWARD'
+tracer.MaximumStepLength = 0.01
 
-glyph = pv_s.Glyph(Input=tracer, GlyphType='Sphere', ScaleMode='scalar', ScaleFactor=0.2)
+# --- Glyphs ---
+glyph = pv_s.Glyph(Input=tracer, GlyphType='Sphere')
+glyph.ScaleArray = ['POINTS', 'Velocity']
+glyph.ScaleFactor = 0.2
 
 glyph_display = pv_s.Show(glyph)
 glyph_display.Representation = 'Surface'
@@ -53,7 +52,7 @@ glyph_display.Opacity = 0.5
 view = pv_s.GetActiveViewOrCreate('RenderView')
 view.ViewSize = [1920, 1080]
 view.BackEnd = 'pathtracer'
-view.Shadows = 1  # AmbientOcclusion is not supported in ParaView 5.11.2
+view.Shadows = 1
 
 # --- Camera Position ---
 cx = (bounds[0] + bounds[1]) / 2
